@@ -576,7 +576,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 						JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
 						String page = data.getString(Cobalt.kJSPage);
 						String controller = data.optString(Cobalt.kJSController, null);
-						push(controller, page);
+                        JSONObject dataToPush = data.optJSONObject(Cobalt.kJSData);
+						push(controller, page, dataToPush);
 						return true;
 					}
 					
@@ -820,9 +821,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 * NAVIGATION
 	 ****************************************************************************************************************/
 
-	private void push(String controller, String page) {
+	private void push(String controller, String page, JSONObject data) {
         Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
         if (intent != null) {
+            if (data != null) {
+                intent.putExtra(Cobalt.kJSData,data.toString());
+            }
             mContext.startActivity(intent);
 		}
 		else if (Cobalt.DEBUG) Log.e(Cobalt.TAG,  TAG + " - push: Unable to push " + controller + " controller");

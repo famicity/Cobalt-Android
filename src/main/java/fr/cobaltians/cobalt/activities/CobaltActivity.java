@@ -32,6 +32,7 @@ package fr.cobaltians.cobalt.activities;
 import fr.cobaltians.cobalt.Cobalt;
 import fr.cobaltians.cobalt.R;
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
+import fr.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -68,6 +69,7 @@ public abstract class CobaltActivity extends ActionBarActivity {
 
     // NAVIGATION
     private boolean mAnimatedTransition;
+    private JSONObject mDataNavigation;
 
     // Pop
     private static ArrayList<Activity> sActivitiesArrayList = new ArrayList<>();
@@ -95,6 +97,15 @@ public abstract class CobaltActivity extends ActionBarActivity {
         Bundle bundle = getIntent().getExtras();
         Bundle extras = (bundle != null) ? bundle.getBundle(Cobalt.kExtras) : null;
 
+        if (extras != null && bundle.containsKey(Cobalt.kJSData)) {
+            try {
+                mDataNavigation = new JSONObject(bundle.getString(Cobalt.kJSData));
+            } catch (JSONException e) {
+                if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: data navigation parsing failed. " + extras.getString(Cobalt.kJSData));
+                e.printStackTrace();
+            }
+        }
+
         // TODO: uncomment for Bars
         /*
         if (extras != null && extras.containsKey(Cobalt.kBars)) {
@@ -115,7 +126,7 @@ public abstract class CobaltActivity extends ActionBarActivity {
             if (fragment != null) {
                 if (bundle != null) {
                     if (extras != null) fragment.setArguments(extras);
-
+                    if (mDataNavigation != null) fragment.sendEvent(Cobalt.JSEventOnPageShown,mDataNavigation, null);
                     mAnimatedTransition = bundle.getBoolean(Cobalt.kJSAnimated, true);
 
                     if (mAnimatedTransition) {
