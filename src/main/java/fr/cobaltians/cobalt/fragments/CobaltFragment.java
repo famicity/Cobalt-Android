@@ -602,7 +602,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 						String page = data.getString(Cobalt.kJSPage);
 						String controller = data.optString(Cobalt.kJSController, null);
 						String callbackId = jsonObj.optString(Cobalt.kJSCallback, null);
-						presentModal(controller, page, callbackId);
+                        JSONObject dataForModal = data.optJSONObject(Cobalt.kJSData);
+                        presentModal(controller, page, dataForModal, callbackId);
 						return true;
 					}
 					
@@ -612,7 +613,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 						JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
 						String controller = data.getString(Cobalt.kJSController);
 						String page = data.getString(Cobalt.kJSPage);
-						dismissModal(controller, page);
+                        JSONObject dataForDissmiss = data.optJSONObject(Cobalt.kJSData);
+                        dismissModal(controller, page, dataForDissmiss);
 						return true;
 					}
 
@@ -621,8 +623,9 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                         JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
                         String controller = data.optString(Cobalt.kJSController, null);
                         String page = data.getString(Cobalt.kJSPage);
+                        JSONObject dataForReplace = data.optJSONObject(Cobalt.kJSData);
                         boolean animated = data.optBoolean(Cobalt.kJSAnimated);
-                        replace(controller, page, animated);
+                        replace(controller, page, dataForReplace, animated);
                         return true;
                     }
 
@@ -848,12 +851,14 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         ((CobaltActivity) mContext).popTo(controller, page, data);
     }
 	
-	private void presentModal(String controller, String page, String callBackID) {
+	private void presentModal(String controller, String page, JSONObject dataForModal, String callBackID) {
 		Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
 		
 		if (intent != null) {
             intent.putExtra(Cobalt.kPushAsModal, true);
-
+            if (dataForModal != null) {
+                intent.putExtra(Cobalt.kJSData,dataForModal.toString());
+            }
 			mContext.startActivity(intent);
 
 			// Sends callback to store current activity & HTML page for dismiss
@@ -871,7 +876,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		else if (Cobalt.DEBUG) Log.e(Cobalt.TAG,  TAG + " - presentModal: Unable to present modal " + controller + " controller");
 	}
 
-	private void dismissModal(String controller, String page) {
+	private void dismissModal(String controller, String page, JSONObject dataForDissmiss) {
 		try {
 			Class<?> pClass = Class.forName(controller);
 
@@ -883,7 +888,9 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 				Intent intent = new Intent(mContext, pClass);
 				intent.putExtra(Cobalt.kExtras, bundle);
                 intent.putExtra(Cobalt.kPopAsModal, true);
-
+                if (dataForDissmiss != null) {
+                    intent.putExtra(Cobalt.kJSData, dataForDissmiss.toString());
+                }
 				NavUtils.navigateUpTo((Activity) mContext, intent);
 			}
 			else if(Cobalt.DEBUG) Log.e(Cobalt.TAG,  TAG + " - dismissModal: unable to dismiss modal since " + controller + " does not inherit from Activity");
@@ -894,10 +901,13 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		}
 	}
 
-    private void replace(String controller, String page, boolean animated) {
+    private void replace(String controller, String page, JSONObject dataForReplace, boolean animated) {
         Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
         if (intent != null) {
             intent.putExtra(Cobalt.kJSAnimated, animated);
+            if (dataForReplace != null) {
+                intent.putExtra(Cobalt.kJSData, dataForReplace.toString());
+            }
             mContext.startActivity(intent);
             ((Activity) mContext).finish();
         }
