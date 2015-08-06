@@ -166,7 +166,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     public void onResume() {
         mAllowCommit = true;
         super.onResume();
-        sendEvent(Cobalt.JSEventOnPageShown, null, null);
+        JSONObject data = ((CobaltActivity) mContext).getDataNavigation();
+        sendEvent(Cobalt.JSEventOnPageShown, data, null);
     }
 	
 	@Override
@@ -585,9 +586,11 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 					else if (action.equals(Cobalt.JSActionNavigationPop)) {
                         JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
                         if (data != null) {
-                            String page = data.getString(Cobalt.kJSPage);
+                            String page = data.optString(Cobalt.kJSPage, null);
                             String controller = data.optString(Cobalt.kJSController, null);
-                            pop(controller, page);
+                            JSONObject dataToPop = data.optJSONObject(Cobalt.kJSData);
+                            if (page != null) pop(controller, page, dataToPop);
+                            else pop(dataToPop);
                         }
                         else pop();
 						return true;
@@ -836,8 +839,13 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         onBackPressed(true);
     }
 
-    private void pop(String controller, String page) {
-        ((CobaltActivity) mContext).popTo(controller, page);
+    private void pop(JSONObject data) {
+        ((CobaltActivity) mContext).dataForPop(data);
+        pop();
+    }
+
+    private void pop(String controller, String page, JSONObject data) {
+        ((CobaltActivity) mContext).popTo(controller, page, data);
     }
 	
 	private void presentModal(String controller, String page, String callBackID) {

@@ -36,8 +36,6 @@ import fr.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NavUtils;
@@ -126,7 +124,6 @@ public abstract class CobaltActivity extends ActionBarActivity {
             if (fragment != null) {
                 if (bundle != null) {
                     if (extras != null) fragment.setArguments(extras);
-                    if (mDataNavigation != null) fragment.sendEvent(Cobalt.JSEventOnPageShown,mDataNavigation, null);
                     mAnimatedTransition = bundle.getBoolean(Cobalt.kJSAnimated, true);
 
                     if (mAnimatedTransition) {
@@ -521,11 +518,11 @@ public abstract class CobaltActivity extends ActionBarActivity {
 	public void back() {
 		runOnUiThread(new Runnable() {
 
-			@Override
-			public void run() {
-				backWithSuper();
-			}
-		});
+            @Override
+            public void run() {
+                backWithSuper();
+            }
+        });
 	}
 
 	private void backWithSuper() {
@@ -548,7 +545,7 @@ public abstract class CobaltActivity extends ActionBarActivity {
         else if (Cobalt.DEBUG) Log.e(Cobalt.TAG,   TAG + " - onWebLayerDismiss: no fragment container found");
 	}
 
-    public void popTo(String controller, String page){
+    public void popTo(String controller, String page, JSONObject data){
         Intent popToIntent = Cobalt.getInstance(this).getIntentForController(controller, page);
 
         if (popToIntent != null) {
@@ -583,6 +580,7 @@ public abstract class CobaltActivity extends ActionBarActivity {
                             || (CobaltActivity.class.isAssignableFrom(oldActivityClass) && page.equals(oldPage)))) {
                         popToControllerFound = true;
                         popToControllerIndex = i;
+                        ((CobaltActivity)oldActivity).setDataNavigation(data);
                         break;
                     }
                 }
@@ -599,5 +597,27 @@ public abstract class CobaltActivity extends ActionBarActivity {
             }
         }
         else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - popTo: unable to pop to null controller");
+    }
+
+    public void dataForPop(JSONObject data) {
+        if (sActivitiesArrayList.size() >= 2) {
+            boolean cobaltActivityFound = false;
+            int index = sActivitiesArrayList.size()-2;
+            while (!cobaltActivityFound && index >= 0) {
+                Activity activity = sActivitiesArrayList.get(index);
+                if (CobaltActivity.class.isAssignableFrom(activity.getClass())) {
+                    ((CobaltActivity) activity).setDataNavigation(data);
+                    cobaltActivityFound = true;
+                }
+                index--;
+            }
+            if (!cobaltActivityFound && Cobalt.DEBUG) Log.e(Cobalt.TAG,  TAG + " - dataForPop: CobaltActivity not found");
+        }
+    }
+
+    public JSONObject getDataNavigation() { return mDataNavigation; }
+
+    public void setDataNavigation(JSONObject data) {
+        this.mDataNavigation = data;
     }
 }
