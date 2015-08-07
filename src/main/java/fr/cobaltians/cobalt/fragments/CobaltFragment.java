@@ -168,6 +168,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         super.onResume();
         JSONObject data = ((CobaltActivity) mContext).getDataNavigation();
         sendEvent(Cobalt.JSEventOnPageShown, data, null);
+        ((CobaltActivity) mContext).setDataNavigation(null);
     }
 	
 	@Override
