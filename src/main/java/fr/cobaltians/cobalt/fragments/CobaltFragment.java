@@ -223,10 +223,10 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         if (isPullToRefreshActive()) {
             mSwipeRefreshLayout = ((CobaltSwipeRefreshLayout) rootView.findViewById(getSwipeRefreshContainerId()));
             if (mSwipeRefreshLayout != null) {
-                mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
-                                                            android.R.color.holo_blue_light,
-                                                            android.R.color.holo_blue_dark,
-                                                            android.R.color.holo_blue_light);
+                mSwipeRefreshLayout.setColorSchemeResources(R.color.cobalt_blue_bright,
+                        R.color.cobalt_blue_light,
+                        R.color.cobalt_blue_dark,
+                        R.color.cobalt_blue_light);
             }
             else if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - setUpViews: SwipeRefresh container not found!");
         }
@@ -268,7 +268,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         }
 	}
 
-    protected void setWebViewSettings(Object javascriptInterface) {
+    protected void setWebViewSettings(CobaltFragment javascriptInterface) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) mWebView.setLayerType(View.LAYER_TYPE_HARDWARE ,null);
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD) mWebView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
@@ -515,172 +515,146 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 			// TYPE
 			if (jsonObj.has(Cobalt.kJSType)) {
 				String type = jsonObj.getString(Cobalt.kJSType);
-				
-				//CALLBACK
-				if (type.equals(Cobalt.JSTypeCallBack)) {
-					String callbackID = jsonObj.getString(Cobalt.kJSCallback);
-					JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
-					
-					return handleCallback(callbackID, data);		
-				}
-				
-				// COBALT IS READY
-				else if (type.equals(Cobalt.JSTypeCobaltIsReady)) {
-                    String versionWeb = jsonObj.optString(Cobalt.kJSVersion, null);
-                    String versionNative = getResources().getString(R.string.version_name);
-                    if (versionWeb != null && !versionWeb.equals(versionNative))
-                        Log.e(TAG, "Warning : Cobalt version mismatch : Android Cobalt version is " + versionNative + " but Web Cobalt version is " + versionWeb + ". You should fix this. ");
-                    onCobaltIsReady();
-					return true;
-				}
-				
-				// EVENT
-				else if (type.equals(Cobalt.JSTypeEvent)) {
-					String event = jsonObj.getString(Cobalt.kJSEvent);
-					JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
-					String callback = jsonObj.optString(Cobalt.kJSCallback, null);
-					
-					return handleEvent(event, data, callback);			
-				}
-				
-				// INTENT
-                else if (type.equals(Cobalt.JSTypeIntent)) {
-                    String action = jsonObj.getString(Cobalt.kJSAction);
 
-                    // OPEN EXTERNAL URL
-                    if (action.equals(Cobalt.JSActionIntentOpenExternalUrl)) {
-                        JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-                        String url = data.getString(Cobalt.kJSUrl);
-                        openExternalUrl(url);
-
-                        return true;
-                    }
-
-                    // UNHANDLED INTENT
-                    else {
-                        onUnhandledMessage(jsonObj);
-                    }
-                }
-				
-				// LOG
-				else if (type.equals(Cobalt.JSTypeLog)) {
-					String text = jsonObj.getString(Cobalt.kJSValue);
-					Log.d(Cobalt.TAG, "JS LOG: " + text);
-					return true;
-				}
-				
-				// NAVIGATION
-				else if (type.equals(Cobalt.JSTypeNavigation)) {
-					String action = jsonObj.getString(Cobalt.kJSAction);
-
-					// PUSH
-					if (action.equals(Cobalt.JSActionNavigationPush)) {
-						JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-						String page = data.getString(Cobalt.kJSPage);
-						String controller = data.optString(Cobalt.kJSController, null);
-                        JSONObject dataToPush = data.optJSONObject(Cobalt.kJSData);
-						push(controller, page, dataToPush);
-						return true;
-					}
-					
-					// POP
-					else if (action.equals(Cobalt.JSActionNavigationPop)) {
+                switch (type) {
+                    // CALLBACK
+                    case Cobalt.JSTypeCallBack:
+                        String callbackID = jsonObj.getString(Cobalt.kJSCallback);
                         JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
-                        if (data != null) {
-                            String page = data.optString(Cobalt.kJSPage, null);
-                            String controller = data.optString(Cobalt.kJSController, null);
-                            JSONObject dataToPop = data.optJSONObject(Cobalt.kJSData);
-                            if (page != null) pop(controller, page, dataToPop);
-                            else pop(dataToPop);
-                        }
-                        else pop();
-						return true;
-					}
-					
-					// MODAL
-					else if (action.equals(Cobalt.JSActionNavigationModal)) {
-						JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-						String page = data.getString(Cobalt.kJSPage);
-						String controller = data.optString(Cobalt.kJSController, null);
-						String callbackId = jsonObj.optString(Cobalt.kJSCallback, null);
-                        JSONObject dataForModal = data.optJSONObject(Cobalt.kJSData);
-                        presentModal(controller, page, dataForModal, callbackId);
-						return true;
-					}
-					
-					// DISMISS
-					else if (action.equals(Cobalt.JSActionNavigationDismiss)) {
-						// TODO: not present in iOS
-						JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-						String controller = data.getString(Cobalt.kJSController);
-						String page = data.getString(Cobalt.kJSPage);
-                        JSONObject dataForDissmiss = data.optJSONObject(Cobalt.kJSData);
-                        dismissModal(controller, page, dataForDissmiss);
-						return true;
-					}
-
-                    //REPLACE
-                    else if (action.equals(Cobalt.JSActionNavigationReplace)) {
-                        JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-                        String controller = data.optString(Cobalt.kJSController, null);
-                        String page = data.getString(Cobalt.kJSPage);
-                        JSONObject dataForReplace = data.optJSONObject(Cobalt.kJSData);
-                        boolean animated = data.optBoolean(Cobalt.kJSAnimated);
-                        replace(controller, page, dataForReplace, animated);
+                        return handleCallback(callbackID, data);
+                    // COBALT IS READY
+                    case Cobalt.JSTypeCobaltIsReady:
+                        String versionWeb = jsonObj.optString(Cobalt.kJSVersion, null);
+                        String versionNative = getResources().getString(R.string.version_name);
+                        if (versionWeb != null && !versionWeb.equals(versionNative))
+                            Log.e(TAG, "Warning : Cobalt version mismatch : Android Cobalt version is " + versionNative + " but Web Cobalt version is " + versionWeb + ". You should fix this. ");
+                        onCobaltIsReady();
                         return true;
-                    }
+                    // EVENT
+                    case Cobalt.JSTypeEvent:
+                        String event = jsonObj.getString(Cobalt.kJSEvent);
+                        JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
+                        String callback = jsonObj.optString(Cobalt.kJSCallback, null);
+                        return handleEvent(event, data, callback);
+                    // INTENT
+                    case Cobalt.JSTypeIntent:
+                        String action = jsonObj.getString(Cobalt.kJSAction);
 
-					// UNHANDLED NAVIGATION
-					else {
-						onUnhandledMessage(jsonObj);
-					}
-				}
-				
-				// PLUGIN
-                else if (type.equals(Cobalt.JSTypePlugin)) {
-                    mPluginManager.onMessage(mContext, this, jsonObj);
+                        // OPEN EXTERNAL URL
+                        if (action.equals(Cobalt.JSActionIntentOpenExternalUrl)) {
+                            JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+                            String url = data.getString(Cobalt.kJSUrl);
+                            openExternalUrl(url);
+
+                            return true;
+                        }
+                        // UNHANDLED INTENT
+                        else {
+                            onUnhandledMessage(jsonObj);
+                            break;
+                        }
+                    // LOG
+                    case Cobalt.JSTypeLog:
+                        String text = jsonObj.getString(Cobalt.kJSValue);
+                        Log.d(Cobalt.TAG, "JS LOG: " + text);
+                        return true;
+                    // NAVIGATION
+                    case Cobalt.JSTypeNavigation:
+                        String action = jsonObj.getString(Cobalt.kJSAction);
+
+                        switch (action) {
+                            // PUSH
+                            case Cobalt.JSActionNavigationPush:
+                                JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                String page = data.getString(Cobalt.kJSPage);
+                                String controller = data.optString(Cobalt.kJSController, null);
+                                JSONObject dataToPush = data.optJSONObject(Cobalt.kJSData);
+                                push(controller, page, dataToPush);
+                                return true;
+                            // POP
+                            case Cobalt.JSActionNavigationPop:
+                                JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
+                                if (data != null) {
+                                    String page = data.optString(Cobalt.kJSPage, null);
+                                    String controller = data.optString(Cobalt.kJSController, null);
+                                    JSONObject dataToPop = data.optJSONObject(Cobalt.kJSData);
+                                    if (page != null) pop(controller, page, dataToPop);
+                                    else pop(dataToPop);
+                                }
+                                else pop();
+                                return true;
+                            // MODAL
+                            case Cobalt.JSActionNavigationModal:
+                                JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                String page = data.getString(Cobalt.kJSPage);
+                                String controller = data.optString(Cobalt.kJSController, null);
+                                String callbackId = jsonObj.optString(Cobalt.kJSCallback, null);
+                                JSONObject dataForModal = data.optJSONObject(Cobalt.kJSData);
+                                presentModal(controller, page, dataForModal, callbackId);
+                                return true;
+                            // DISMISS
+                            case Cobalt.JSActionNavigationDismiss:
+                                // TODO: not present in iOS
+                                JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                String controller = data.getString(Cobalt.kJSController);
+                                String page = data.getString(Cobalt.kJSPage);
+                                JSONObject dataForDissmiss = data.optJSONObject(Cobalt.kJSData);
+                                dismissModal(controller, page, dataForDissmiss);
+                                return true;
+                            // REPLACE
+                            case Cobalt.JSActionNavigationReplace:
+                                JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                String controller = data.optString(Cobalt.kJSController, null);
+                                String page = data.getString(Cobalt.kJSPage);
+                                JSONObject dataForReplace = data.optJSONObject(Cobalt.kJSData);
+                                boolean animated = data.optBoolean(Cobalt.kJSAnimated);
+                                replace(controller, page, dataForReplace, animated);
+                                return true;
+                            // UNHANDLED NAVIGATION
+                            default:
+                                onUnhandledMessage(jsonObj);
+                                break;
+                        }
+                        break;
+                    // PLUGIN
+                    case Cobalt.JSTypePlugin:
+                        mPluginManager.onMessage(mContext, this, jsonObj);
+                        break;
+                    // UI
+                    case Cobalt.JSTypeUI:
+                        String control = jsonObj.getString(Cobalt.kJSUIControl);
+                        JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+                        String callback = jsonObj.optString(Cobalt.kJSCallback, null);
+                        return handleUi(control, data, callback);
+                    // WEB LAYER
+                    case Cobalt.JSTypeWebLayer:
+                        String action = jsonObj.getString(Cobalt.kJSAction);
+
+                        // SHOW
+                        if (action.equals(Cobalt.JSActionWebLayerShow)) {
+                            final JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+
+                            mHandler.post(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    showWebLayer(data);
+                                }
+                            });
+
+                            return true;
+                        }
+                        // UNHANDLED WEB LAYER
+                        else {
+                            onUnhandledMessage(jsonObj);
+                            break;
+                        }
+                    // UNHANDLED TYPE
+                    default:
+                        onUnhandledMessage(jsonObj);
+                        break;
                 }
-				
-				// UI
-		    	else if (type.equals(Cobalt.JSTypeUI)) {
-			    	String control = jsonObj.getString(Cobalt.kJSUIControl);
-					JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-					String callback = jsonObj.optString(Cobalt.kJSCallback, null);
-
-					return handleUi(control, data, callback);
-		    	}
-				
-				// WEB LAYER
-				else if (type.equals(Cobalt.JSTypeWebLayer)) {
-					String action = jsonObj.getString(Cobalt.kJSAction);
-					
-					// SHOW
-					if (action.equals(Cobalt.JSActionWebLayerShow)) {
-						final JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-						
-						mHandler.post(new Runnable() {
-
-							@Override
-							public void run() {
-								showWebLayer(data);
-							}
-						});
-						
-						return true;
-					}
-					
-					// UNHANDLED WEB LAYER
-					else {
-						onUnhandledMessage(jsonObj);
-					}
-				}
-				
-				// UNHANDLED TYPE
-				else {
-					onUnhandledMessage(jsonObj);
-				}
 			}
-
 			// UNHANDLED MESSAGE
 			else {
 				onUnhandledMessage(jsonObj);
@@ -1261,22 +1235,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	
 	private boolean isPullToRefreshActive() {
 		Bundle args = getArguments();
-		if (args != null) {
-			return args.getBoolean(Cobalt.kPullToRefresh);
-		}
-		else {
-			return false;
-		}
+        return args != null && args.getBoolean(Cobalt.kPullToRefresh);
 	}
 	
 	private boolean isInfiniteScrollActive() {
 		Bundle args = getArguments();
-		if (args != null) {
-			return args.getBoolean(Cobalt.kInfiniteScroll);
-		}
-		else {
-			return false;
-		}
+		return args != null && args.getBoolean(Cobalt.kInfiniteScroll);
 	}
 
     private int getInfiniteScrollOffset() {

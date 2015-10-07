@@ -94,7 +94,7 @@ public class CobaltDatePickerFragment extends DialogFragment implements DatePick
 		}
 		
 		else {
-			LayoutInflater inflater = (LayoutInflater) ((Activity) mContext).getLayoutInflater();
+			LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
 			final DatePicker datePicker = (DatePicker) inflater.inflate(R.layout.date_picker_cobalt, null);
 			AlertDialog.Builder datePickerBuilder = new AlertDialog.Builder(mContext);
 			datePickerBuilder.setView(datePicker);

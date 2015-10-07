@@ -67,7 +67,7 @@ public class OverScrollingWebView extends WebView {
 		
 		if (mScrollListener != null
 			&& IScrollListener.class.isAssignableFrom(mScrollListener.getClass())) {
-			((IScrollListener) mScrollListener).onOverScrolled(scrollX, scrollY, oldScrollX, oldScrollY);
+			mScrollListener.onOverScrolled(scrollX, scrollY, oldScrollX, oldScrollY);
 		}
 	}	
 }

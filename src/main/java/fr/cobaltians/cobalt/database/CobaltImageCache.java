@@ -47,7 +47,7 @@ public class CobaltImageCache {
     private Hashtable<String, Bitmap> mMapImages;
 	
 	private CobaltImageCache() {
-        mMapImages = new Hashtable<String, Bitmap> ();
+        mMapImages = new Hashtable<> ();
 	}
 
 	public static CobaltImageCache getInstance() {

@@ -393,7 +393,7 @@ public class Cobalt {
      **********************************************************************************************/
 
     public HashMap<String, Class<? extends CobaltAbstractPlugin>> getPlugins() {
-        HashMap<String, Class<? extends CobaltAbstractPlugin>> pluginsMap = new HashMap<String, Class<? extends CobaltAbstractPlugin>>();
+        HashMap<String, Class<? extends CobaltAbstractPlugin>> pluginsMap = new HashMap<>();
 
         try {
             JSONObject configuration = getConfiguration();

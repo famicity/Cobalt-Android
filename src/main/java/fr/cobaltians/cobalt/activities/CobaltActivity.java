@@ -41,7 +41,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.NavUtils;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -61,7 +61,7 @@ import org.json.JSONObject;
  * {@link Activity} containing a {@link CobaltFragment}.
  * @author Diane
  */
-public abstract class CobaltActivity extends ActionBarActivity {
+public abstract class CobaltActivity extends AppCompatActivity {
 
     protected static final String TAG = CobaltActivity.class.getSimpleName();
 
