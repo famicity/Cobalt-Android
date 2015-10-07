@@ -110,9 +110,9 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 **************************************************************************************************/
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mContext = activity;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
     }
 
     @Override
@@ -516,11 +516,15 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 			if (jsonObj.has(Cobalt.kJSType)) {
 				String type = jsonObj.getString(Cobalt.kJSType);
 
+                final JSONObject data;
+                String callback;
+                String action;
+
                 switch (type) {
                     // CALLBACK
                     case Cobalt.JSTypeCallBack:
                         String callbackID = jsonObj.getString(Cobalt.kJSCallback);
-                        JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
+                        data = jsonObj.optJSONObject(Cobalt.kJSData);
                         return handleCallback(callbackID, data);
                     // COBALT IS READY
                     case Cobalt.JSTypeCobaltIsReady:
@@ -533,16 +537,16 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     // EVENT
                     case Cobalt.JSTypeEvent:
                         String event = jsonObj.getString(Cobalt.kJSEvent);
-                        JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
-                        String callback = jsonObj.optString(Cobalt.kJSCallback, null);
+                        data = jsonObj.optJSONObject(Cobalt.kJSData);
+                        callback = jsonObj.optString(Cobalt.kJSCallback, null);
                         return handleEvent(event, data, callback);
                     // INTENT
                     case Cobalt.JSTypeIntent:
-                        String action = jsonObj.getString(Cobalt.kJSAction);
+                        action = jsonObj.getString(Cobalt.kJSAction);
 
                         // OPEN EXTERNAL URL
                         if (action.equals(Cobalt.JSActionIntentOpenExternalUrl)) {
-                            JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+                            data = jsonObj.getJSONObject(Cobalt.kJSData);
                             String url = data.getString(Cobalt.kJSUrl);
                             openExternalUrl(url);
 
@@ -560,23 +564,26 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                         return true;
                     // NAVIGATION
                     case Cobalt.JSTypeNavigation:
-                        String action = jsonObj.getString(Cobalt.kJSAction);
+                        action = jsonObj.getString(Cobalt.kJSAction);
+
+                        String page;
+                        String controller;
 
                         switch (action) {
                             // PUSH
                             case Cobalt.JSActionNavigationPush:
-                                JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-                                String page = data.getString(Cobalt.kJSPage);
-                                String controller = data.optString(Cobalt.kJSController, null);
+                                data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                page = data.getString(Cobalt.kJSPage);
+                                controller = data.optString(Cobalt.kJSController, null);
                                 JSONObject dataToPush = data.optJSONObject(Cobalt.kJSData);
                                 push(controller, page, dataToPush);
                                 return true;
                             // POP
                             case Cobalt.JSActionNavigationPop:
-                                JSONObject data = jsonObj.optJSONObject(Cobalt.kJSData);
+                                data = jsonObj.optJSONObject(Cobalt.kJSData);
                                 if (data != null) {
-                                    String page = data.optString(Cobalt.kJSPage, null);
-                                    String controller = data.optString(Cobalt.kJSController, null);
+                                    page = data.optString(Cobalt.kJSPage, null);
+                                    controller = data.optString(Cobalt.kJSController, null);
                                     JSONObject dataToPop = data.optJSONObject(Cobalt.kJSData);
                                     if (page != null) pop(controller, page, dataToPop);
                                     else pop(dataToPop);
@@ -585,9 +592,9 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 return true;
                             // MODAL
                             case Cobalt.JSActionNavigationModal:
-                                JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-                                String page = data.getString(Cobalt.kJSPage);
-                                String controller = data.optString(Cobalt.kJSController, null);
+                                data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                page = data.getString(Cobalt.kJSPage);
+                                controller = data.optString(Cobalt.kJSController, null);
                                 String callbackId = jsonObj.optString(Cobalt.kJSCallback, null);
                                 JSONObject dataForModal = data.optJSONObject(Cobalt.kJSData);
                                 presentModal(controller, page, dataForModal, callbackId);
@@ -595,17 +602,17 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             // DISMISS
                             case Cobalt.JSActionNavigationDismiss:
                                 // TODO: not present in iOS
-                                JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-                                String controller = data.getString(Cobalt.kJSController);
-                                String page = data.getString(Cobalt.kJSPage);
+                                data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                controller = data.getString(Cobalt.kJSController);
+                                page = data.getString(Cobalt.kJSPage);
                                 JSONObject dataForDissmiss = data.optJSONObject(Cobalt.kJSData);
                                 dismissModal(controller, page, dataForDissmiss);
                                 return true;
                             // REPLACE
                             case Cobalt.JSActionNavigationReplace:
-                                JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-                                String controller = data.optString(Cobalt.kJSController, null);
-                                String page = data.getString(Cobalt.kJSPage);
+                                data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                controller = data.optString(Cobalt.kJSController, null);
+                                page = data.getString(Cobalt.kJSPage);
                                 JSONObject dataForReplace = data.optJSONObject(Cobalt.kJSData);
                                 boolean animated = data.optBoolean(Cobalt.kJSAnimated);
                                 replace(controller, page, dataForReplace, animated);
@@ -623,16 +630,16 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     // UI
                     case Cobalt.JSTypeUI:
                         String control = jsonObj.getString(Cobalt.kJSUIControl);
-                        JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
-                        String callback = jsonObj.optString(Cobalt.kJSCallback, null);
+                        data = jsonObj.getJSONObject(Cobalt.kJSData);
+                        callback = jsonObj.optString(Cobalt.kJSCallback, null);
                         return handleUi(control, data, callback);
                     // WEB LAYER
                     case Cobalt.JSTypeWebLayer:
-                        String action = jsonObj.getString(Cobalt.kJSAction);
+                        action = jsonObj.getString(Cobalt.kJSAction);
 
                         // SHOW
                         if (action.equals(Cobalt.JSActionWebLayerShow)) {
-                            final JSONObject data = jsonObj.getJSONObject(Cobalt.kJSData);
+                            data = jsonObj.getJSONObject(Cobalt.kJSData);
 
                             mHandler.post(new Runnable() {
 
