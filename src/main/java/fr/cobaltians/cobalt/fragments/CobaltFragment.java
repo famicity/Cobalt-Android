@@ -309,6 +309,11 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 return false;
             }
         });
+        
+        //Enable Webview debugging from chrome desktop
+        if (Cobalt.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
 
         // Add JavaScript interface so JavaScript can call native functions.
         mWebView.addJavascriptInterface(javascriptInterface, "Android");
