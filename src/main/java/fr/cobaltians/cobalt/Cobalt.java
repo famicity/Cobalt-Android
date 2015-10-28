@@ -72,20 +72,32 @@ public class Cobalt {
     private final static String kPlugins = "plugins";
     private final static String kAndroid = "android";
     private final static String kDefaultController = "default";
-    // TODO: uncomment for Bars
-    /*
+
     public final static String kBars = "bars";
-    public final static String kVisible = "visible";
-    public final static String kBackgroundColor = "backgroundColor";
-    public final static String kIcon = "androidIcon";
-    public final static String kTitle = "title";
-    public final static String kActions = "actions";
-    public final static String kName = "name";
-    public final static String kPosition = "androidPosition";
-    public final static String kPositionOverflow = "overflow";
+    public final static String kBarsVisible = "visible";
+    public final static String kVisibleTop = "top";
+    public final static String kVisibleBottom = "bottom";
+    public final static String kBarsBackgroundColor = "backgroundColor";
+    public final static String kBarsColor = "color";
+    public final static String kBarsTitle = "title";
+    public final static String kBarsIcon = "androidIcon";
+    public final static String kBarsNavigationIcon = "androidNavigationIcon";
+    public final static String kNavigationIconEnabled = "enabled";
+    public final static String kNavigationIconIcon = "icon";
+    public final static String kBarsActions = "actions";
+    public final static String kActionName = "name";
+    public final static String kActionTitle = "title";
+    public final static String kActionPosition = "androidPosition";
     public final static String kPositionTop = "top";
+    public final static String kPositionOverflow = "overflow";
     public final static String kPositionBottom = "bottom";
-    */
+    public final static String kActionIcon = "icon";
+    public final static String kActionAndroidIcon = "androidIcon";
+    public final static String kActionColor = "color";
+    public final static String kActionVisible = "visible";
+    public final static String kActionEnabled = "enabled";
+    public final static String kActionBadge = "badge";
+
     public final static String kExtras = "extras";
     public final static String kPage = "page";
     public final static String kActivity = "activity";
@@ -159,14 +171,10 @@ public class Cobalt {
     public final static String kJSAlertCancelable = "cancelable";
     public final static String kJSAlertButtonIndex  = "index";
 
-
-    // TODO: uncomment for Bars
     // BARS
-    /*
     public final static String JSControlBars = "bars";
-    public final static String JSActionButtonPressed = "buttonPressed";
-    public final static String kJSBarsButton = "button";
-    */
+    public final static String JSActionActionPressed = "actionPressed";
+    public final static String kJSActionName = "name";
 
     // DATE PICKER
     public static final String JSControlPicker = "picker";
@@ -344,8 +352,7 @@ public class Cobalt {
             JSONObject controllers = configuration.getJSONObject(kControllers);
 
             String activity;
-            // TODO: uncomment for Bars
-            //JSONObject actionBar;
+            JSONObject bars;
             boolean enablePullToRefresh;
             boolean enableInfiniteScroll;
             int infiniteScrollOffset;
@@ -354,14 +361,14 @@ public class Cobalt {
             if (controller != null
                 && controllers.has(controller)) {
                 activity = controllers.getJSONObject(controller).getString(kAndroid);
-                //actionBar = controllers.getJSONObject(controller).optJSONObject(kBars);
+                bars = controllers.getJSONObject(controller).optJSONObject(kBars);
                 enablePullToRefresh = controllers.getJSONObject(controller).optBoolean(kPullToRefresh);
                 enableInfiniteScroll = controllers.getJSONObject(controller).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(controller).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
             }
             else {
                 activity = controllers.getJSONObject(kDefaultController).getString(kAndroid);
-                //actionBar = controllers.getJSONObject(kDefaultController).optJSONObject(kBars);
+                bars = controllers.getJSONObject(kDefaultController).optJSONObject(kBars);
                 enablePullToRefresh = controllers.getJSONObject(kDefaultController).optBoolean(kPullToRefresh);
                 enableInfiniteScroll = controllers.getJSONObject(kDefaultController).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(kDefaultController).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
@@ -370,7 +377,7 @@ public class Cobalt {
             if (activity.substring(0,1).equals(".")) activity = PACKAGE_NAME + activity;
 
             bundle.putString(kActivity, activity);
-            //if (actionBar != null) bundle.putString(kBars, actionBar.toString());
+            if (bars != null) bundle.putString(kBars, bars.toString());
             bundle.putBoolean(kPullToRefresh, enablePullToRefresh);
             bundle.putBoolean(kInfiniteScroll, enableInfiniteScroll);
             bundle.putInt(kInfiniteScrollOffset, infiniteScrollOffset);
