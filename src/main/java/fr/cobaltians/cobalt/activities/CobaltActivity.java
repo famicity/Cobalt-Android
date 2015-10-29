@@ -373,19 +373,10 @@ public abstract class CobaltActivity extends AppCompatActivity {
             return;
         }
 
-        // Reset or configuration == null
-        actionBar.hide();
+        // Default
+        actionBar.show();
         actionBar.setTitle(null);
         actionBar.setDisplayHomeAsUpEnabled(true);
-
-        // Reset
-        //androidIcon default: system according to the documentation
-        /*
-        actionBar.setLogo(null);
-        actionBar.setDisplayShowHomeEnabled(false);
-        */
-        //actionBar.setDisplayShowTitleEnabled(false);
-        //bottomActionBar.setVisibility(View.GONE);
 
         if (configuration != null) {
             // Background color
@@ -396,7 +387,8 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 int colorInt = Color.parseColor(backgroundColor);
                 actionBar.setBackgroundDrawable(new ColorDrawable(colorInt));
                 bottomActionBar.setBackgroundColor(colorInt);
-            } catch (IllegalArgumentException exception) {
+            }
+            catch (IllegalArgumentException exception) {
                 if (Cobalt.DEBUG) {
                     Log.w(Cobalt.TAG, TAG + "setupBars: backgroundColor " + backgroundColor + " format not supported, use #RRGGBB.");
                 }
@@ -407,22 +399,35 @@ public abstract class CobaltActivity extends AppCompatActivity {
 
             // Logo
             // TODO: add font support
-            // TODO: enhance with optional package
             String logo = configuration.optString(Cobalt.kBarsIcon);
             try {
                 if (logo.length() == 0) throw new IllegalArgumentException();
-                String[] split = logo.split(":");
-                if (split.length != 2) throw new IllegalArgumentException();
-                int resId = getResources().getIdentifier(split[1], "drawable", split[0]);
-                if (resId == 0)
-                    Log.w(Cobalt.TAG, TAG + "setupBars: androidIcon " + logo + " not found.");
-                else {
-                    actionBar.setLogo(resId);
-                    //actionBar.setDisplayShowHomeEnabled(true);
+                String[] logoSplit = logo.split(":");
+                String packageName, logoName;
+                switch(logoSplit.length) {
+                    case 1:
+                        packageName = getPackageName();
+                        logoName = logoSplit[0];
+                        break;
+                    case 2:
+                        packageName = logoSplit[0].length() != 0 ? logoSplit[0] : getPackageName();
+                        logoName = logoSplit[1];
+                        break;
+                    default:
+                        throw new IllegalArgumentException();
                 }
-            } catch (IllegalArgumentException exception) {
+                int resId = getResources().getIdentifier(logoName, "drawable", packageName);
+                if (resId != 0) {
+                    actionBar.setIcon(resId);
+                    actionBar.setDisplayShowHomeEnabled(true);
+                }
+                else {
+                    Log.w(Cobalt.TAG, TAG + "setupBars: androidIcon " + logo + " not found.");
+                }
+            }
+            catch (IllegalArgumentException exception) {
                 if (Cobalt.DEBUG) {
-                    Log.w(Cobalt.TAG, TAG + "setupBars: androidIcon " + logo + " format not supported, use com.example.app:icon.");
+                    Log.w(Cobalt.TAG, TAG + "setupBars: androidIcon " + logo + " format not supported, use icon, :icon or com.example.app:icon.");
                 }
                 exception.printStackTrace();
             }
@@ -432,23 +437,13 @@ public abstract class CobaltActivity extends AppCompatActivity {
             if (title.length() != 0) {
                 actionBar.setTitle(title);
                 //actionBar.setDisplayShowTitleEnabled(true);
-            } else {
-                actionBar.setTitle(null);
-
-                if (Cobalt.DEBUG) {
-                    Log.w(Cobalt.TAG, TAG + "setupBars: title is empty.");
-                }
             }
 
             // Visible
             JSONObject visible = configuration.optJSONObject(Cobalt.kBarsVisible);
-            if (visible == null) {
-                actionBar.hide();
-            } else {
-                boolean top = visible.optBoolean(Cobalt.kVisibleTop);
-                if (top) {
-                    actionBar.show();
-                } else {
+            if (visible != null) {
+                boolean top = visible.optBoolean(Cobalt.kVisibleTop, true);
+                if (!top) {
                     actionBar.hide();
                 }
 
@@ -459,19 +454,43 @@ public abstract class CobaltActivity extends AppCompatActivity {
             }
 
             // Up
-            // TODO: really override the caret (<) design?
-            /*
-            androidNavigationIcon:{
-                enabled:boolean,        //default: true
-                icon: string,           //default system
-            },
-            */
             JSONObject navigationIcon = configuration.optJSONObject(Cobalt.kBarsNavigationIcon);
-            if (navigationIcon == null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
-            } else {
+            if (navigationIcon != null) {
                 boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
                 actionBar.setDisplayHomeAsUpEnabled(enabled);
+
+                String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
+                // TODO: add font support
+                try {
+                    if (icon.length() == 0) throw new IllegalArgumentException();
+                    String[] iconSplit = icon.split(":");
+                    String packageName, iconName;
+                    switch(iconSplit.length) {
+                        case 1:
+                            packageName = getPackageName();
+                            iconName = iconSplit[0];
+                            break;
+                        case 2:
+                            packageName = iconSplit[0].length() != 0 ? iconSplit[0] : getPackageName();
+                            iconName = iconSplit[1];
+                            break;
+                        default:
+                            throw new IllegalArgumentException();
+                    }
+                    int resId = getResources().getIdentifier(iconName, "drawable", packageName);
+                    if (resId != 0) {
+                        actionBar.setHomeAsUpIndicator(resId);
+                    }
+                    else {
+                        Log.w(Cobalt.TAG, TAG + "setupBars: androidNavigationIcon " + icon + " not found.");
+                    }
+                }
+                catch (IllegalArgumentException exception) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + "setupBars: androidNavigationIcon " + icon + " format not supported, use icon, :icon or com.example.app:icon.");
+                    }
+                    exception.printStackTrace();
+                }
             }
         }
     }
