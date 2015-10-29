@@ -230,7 +230,6 @@ public abstract class CobaltActivity extends AppCompatActivity {
      *
      **********************************************************************************************/
 
-    // TODO: uncomment for Bars
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -238,14 +237,17 @@ public abstract class CobaltActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         Bundle extras = (bundle != null) ? bundle.getBundle(Cobalt.kExtras) : null;
 
-        if (extras != null && extras.containsKey(Cobalt.kBars)) {
+        if (extras != null
+            && extras.containsKey(Cobalt.kBars)) {
             try {
                 JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
                 JSONArray actions = actionBar.optJSONArray(Cobalt.kBarsActions);
                 if (actions != null) return setupOptionsMenu(menu, actions);
             }
             catch (JSONException exception) {
-                if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: action bar configuration parsing failed. " + extras.getString(Cobalt.kBars));
+                if (Cobalt.DEBUG) {
+                    Log.e(Cobalt.TAG, TAG + " - onCreate: action bar configuration parsing failed. " + extras.getString(Cobalt.kBars));
+                }
                 exception.printStackTrace();
             }
         }
@@ -321,47 +323,6 @@ public abstract class CobaltActivity extends AppCompatActivity {
         return R.id.bottom_bar;
     }
 
-    // TODO: uncomment for Bars
-     /*
-    bars: {
-        visible: {
-            top: boolean,           //default: false
-            bottom: false           //default: false
-        },
-        backgroundColor: string,    //default: system
-        color: string,              //default: system
-        title: string,              //default: ""
-        androidIcon: string,        //default: system, may be "package:icon" or "fontKey character"
-        androidNavigationIcon:{
-            enabled:boolean,        //default: true
-            icon: string,           //default system
-        },
-        actions: []                 //default: undefined
-    }
-    */
-
-    /*
-    actions[{
-        name: string,               //mandatory
-        title: string,              //mandatory
-        androidPosition: string,    //mandatory, may be "top", "bottom", "overflow"
-        icon: string,               //default: undefined, must be "fontKey character"
-        androidIcon: string,        //default: undefined, must be "package:icon"
-        color: string,              //default: same as bar color
-        visible: boolean,           //default: true
-        enabled: boolean,           //default: true
-        badge: string               //default: undefined, if "", hide it
-    },
-    ...]
-    */
-
-    /*
-    actions:[{
-        androidPosition: string,    //mandatory, may be "top", "bottom", "overflow"
-        actions: []
-    },
-    ...]
-    */
     private void setupBars(JSONObject configuration) {
         ActionBar actionBar = getSupportActionBar();
         LinearLayout bottomActionBar = (LinearLayout) findViewById(getBottomBarId());
@@ -393,6 +354,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 exception.printStackTrace();
             }
 
+            // Color (default: system)
             // TODO: color
 
             // Logo
@@ -497,10 +459,12 @@ public abstract class CobaltActivity extends AppCompatActivity {
     private boolean setupOptionsMenu(Menu menu, JSONArray actions) {
         ActionBar actionBar = getSupportActionBar();
         LinearLayout bottomActionBar = (LinearLayout) findViewById(getBottomBarId());
-        boolean showBottomActionBar = false;
 
-        if (actionBar == null) {
-            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + "setupOptionsMenu: activity does not have an action bar.");
+        if (actionBar == null
+            || bottomActionBar == null) {
+            if (Cobalt.DEBUG) {
+                Log.w(Cobalt.TAG, TAG + "setupOptionsMenu: activity does not have an action bar and/or does not contain a bottom bar.");
+            }
             return false;
         }
 
@@ -508,15 +472,29 @@ public abstract class CobaltActivity extends AppCompatActivity {
         int menuItemsAddedToOverflow = 0;
 
         int length = actions.length();
-
         for (int i = 0; i < length; i++) {
             try {
+                // TODO: handle groups
+                /*
+                actions:[{
+                    androidPosition: string,    //mandatory, may be "top", "bottom", "overflow"
+                    actions: []
+                },
+                ...]
+                */
                 JSONObject action = actions.getJSONObject(i);
                 final String name = action.getString(Cobalt.kActionName);
                 String title = action.getString(Cobalt.kActionTitle);
-                String icon = action.optString(Cobalt.kActionIcon);
-                String position = action.optString(Cobalt.kActionPosition, Cobalt.kPositionTop);
+                String position = action.getString(Cobalt.kActionPosition);             // must be "top", "bottom", "overflow"
+                // TODO: add font support
+                String icon = action.optString(Cobalt.kActionIcon, null);               // must be "fontKey character"
+                String androidIcon = action.optString(Cobalt.kActionAndroidIcon, null); // must be "icon", ":icon", "package:icon"
+                // TODO: add default color support
+                String color = action.optString(Cobalt.kActionColor, null);             // default: same as bar color
                 boolean visible = action.optBoolean(Cobalt.kActionVisible, true);
+                boolean enabled = action.optBoolean(Cobalt.kActionEnabled, true);
+                // TODO: add badge support
+                String badge = action.optString(Cobalt.kActionBadge, null);             // if "", hide it
 
                 MenuItem menuItem;
                 String[] split;
@@ -532,10 +510,10 @@ public abstract class CobaltActivity extends AppCompatActivity {
 
                         menuItem = menu.add(Menu.NONE, i, menuItemsAddedToTop++, title);
                         menuItem.setIcon(resId);
+                        // TODO: limit according to screen width dp (< 360dp : 2, 360dp >= < 500dp : 3, 500dp >= < 600dp : 4, 600dp >= : 5)
                         if (menuItemsAddedToTop > 2) MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_IF_ROOM);
                         else MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
                         menuItem.setVisible(visible);
-
                         mMenuItemsHashMap.put(i, name);
                         break;
                     case Cobalt.kPositionOverflow:
@@ -566,7 +544,6 @@ public abstract class CobaltActivity extends AppCompatActivity {
                         //if (title != null) button.setContentDescription(title);
                         if (visible) {
                             button.setVisibility(View.VISIBLE);
-                            showBottomActionBar = true;
                         }
                         else button.setVisibility(View.GONE);
 
@@ -607,12 +584,11 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + "setupOptionsMenu: actions " + actions.toString() + " format not supported, use at least {\n"
                                                     + "\tname: \"name\",\n"
                                                     + "\ttitle: \"title\",\n"
+                                                    + "\tandroidPosition: \"top\"|\"overflow\"|\"bottom\"\n"
                                                     + "}");
                 exception.printStackTrace();
             }
         }
-
-        if (actionBar.isShowing() && showBottomActionBar) bottomActionBar.setVisibility(View.VISIBLE);
 
         // true to display menu
         return true;
