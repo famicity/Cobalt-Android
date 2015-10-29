@@ -382,9 +382,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
             // Background color
             String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor);
             try {
-                if (backgroundColor.length() == 0) throw new IllegalArgumentException();
-                // TODO: support (#)RGB or (#)RRGGBB(AA) color formats
-                int colorInt = Color.parseColor(backgroundColor);
+                int colorInt = Cobalt.parseColor(backgroundColor);
                 actionBar.setBackgroundDrawable(new ColorDrawable(colorInt));
                 bottomActionBar.setBackgroundColor(colorInt);
             }

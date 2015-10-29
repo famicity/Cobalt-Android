@@ -37,6 +37,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -486,5 +487,42 @@ public class Cobalt {
         }
 
         return "";
+    }
+
+    /**
+     * Parses the color string and return the corresponding color-int.
+     * @param color the color string to parse. Supported formats are (#)RGB & (#)RRGGBB(AA).
+     * @return the corresponding color-int.
+     * @throws IllegalArgumentException if the string cannot be parsed.
+     */
+    public static int parseColor(String color) throws IllegalArgumentException {
+        if (color == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (! color.startsWith("#")) {
+            color = "#" + color;
+        }
+
+        switch(color.length()) {
+            case 4:
+                // #RGB -> #RRGGBB
+                String red = color.substring(1, 2);
+                String green = color.substring(2, 3);
+                String blue = color.substring(3, 4);
+                color = "#" + red + red + green + green + blue + blue;
+                break;
+            case 7:
+                // #RRGGBB
+                break;
+            case 9:
+                // #RRGGBBAA -> #AARRGGBB
+                color = "#" + color.substring(7, 9) + color.substring(1, 7);
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
+        return Color.parseColor(color);
     }
 }
