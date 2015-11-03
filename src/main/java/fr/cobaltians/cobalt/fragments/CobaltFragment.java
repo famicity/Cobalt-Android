@@ -620,7 +620,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 page = data.getString(Cobalt.kJSPage);
                                 JSONObject dataForReplace = data.optJSONObject(Cobalt.kJSData);
                                 boolean animated = data.optBoolean(Cobalt.kJSAnimated);
-                                replace(controller, page, dataForReplace, animated);
+                                boolean clearHistory = data.optBoolean(Cobalt.kJSClearHistory, false);
+                                replace(controller, page, dataForReplace, animated, clearHistory);
                                 return true;
                             // UNHANDLED NAVIGATION
                             default:
@@ -888,13 +889,15 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		}
 	}
 
-    private void replace(String controller, String page, JSONObject dataForReplace, boolean animated) {
+    private void replace(String controller, String page, JSONObject dataForReplace, boolean animated, boolean clearHistory) {
         Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
         if (intent != null) {
             intent.putExtra(Cobalt.kJSAnimated, animated);
             if (dataForReplace != null) {
                 intent.putExtra(Cobalt.kJSData, dataForReplace.toString());
             }
+            if (clearHistory) intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+
             mContext.startActivity(intent);
             ((Activity) mContext).finish();
         }
