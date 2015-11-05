@@ -86,6 +86,7 @@ public class Cobalt {
     public final static String kNavigationIconEnabled = "enabled";
     public final static String kNavigationIconIcon = "icon";
     public final static String kBarsActions = "actions";
+    public final static String kActionActions = "actions";
     public final static String kActionName = "name";
     public final static String kActionTitle = "title";
     public final static String kActionPosition = "androidPosition";
