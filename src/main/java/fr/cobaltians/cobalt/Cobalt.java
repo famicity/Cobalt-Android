@@ -156,6 +156,7 @@ public class Cobalt {
     public final static String JSActionNavigationDismiss = "dismiss";
     public final static String JSActionNavigationReplace = "replace";
     public final static String kJSController = "controller";
+    public final static String kJSBars = "bars";
     public final static String kJSAnimated = "animated";
 
     // BACK BUTTON
