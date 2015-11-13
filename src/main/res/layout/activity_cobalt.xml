@@ -49,10 +49,11 @@
         android:visibility="gone" />
         -->
 
-    <fr.cobaltians.cobalt.customviews.SplitToolbar
+    <fr.cobaltians.cobalt.customviews.BottomBar
         android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:visibility="gone" />
 
 </LinearLayout>
+
