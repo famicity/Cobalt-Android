@@ -317,7 +317,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
         return R.id.bottom_bar;
     }
 
-    private void setupBars(JSONObject configuration) {
+    public void setupBars(JSONObject configuration) {
         ActionBar actionBar = getSupportActionBar();
         // TODO: use LinearLayout for bottomBar instead to handle groups
         //LinearLayout bottomBar = (LinearLayout) findViewById(getBottomBarId());
