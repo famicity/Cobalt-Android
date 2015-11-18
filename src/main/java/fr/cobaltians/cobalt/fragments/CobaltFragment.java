@@ -813,12 +813,11 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		return false;
 	}
 
-    private void setBars(JSONObject actionBar) {
+    private void setBars(final JSONObject actionBar) {
         Intent intent = ((CobaltActivity) mContext).getIntent();
         Bundle bundle = intent.getExtras();
         if (bundle == null) {
             bundle = new Bundle();
-            intent.putExtras(bundle);
         }
         Bundle extras = bundle.getBundle(Cobalt.kExtras);
         if (extras == null) {
@@ -827,9 +826,15 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         }
 
         extras.putString(Cobalt.kBars, actionBar.toString());
+        intent.putExtras(bundle);
 
-        ((CobaltActivity) mContext).setupBars(actionBar);
-        ((CobaltActivity) mContext).supportInvalidateOptionsMenu();
+        ((CobaltActivity) mContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((CobaltActivity) mContext).setupBars(actionBar);
+                ((CobaltActivity) mContext).supportInvalidateOptionsMenu();
+            }
+        });
     }
 	protected abstract void onUnhandledMessage(JSONObject message);
 	
