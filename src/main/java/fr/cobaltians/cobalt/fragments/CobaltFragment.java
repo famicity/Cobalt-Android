@@ -729,8 +729,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	
 	private boolean handleUi(String control, JSONObject data, String callback) {
 		try {
-			// PICKER
             switch (control) {
+                // PICKER
                 case Cobalt.JSControlPicker:
                     String type = data.getString(Cobalt.kJSType);
 
@@ -765,13 +765,28 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     }
 
                     break;
+                // ALERT
                 case Cobalt.JSControlAlert:
                     showAlertDialog(data, callback);
                     return true;
+                // TOAST
                 case Cobalt.JSControlToast:
                     String message = data.getString(Cobalt.kJSMessage);
                     Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
                     return true;
+                // BARS
+                case Cobalt.JSControlBars:
+                    String action = data.getString(Cobalt.kJSAction);
+                    switch(action) {
+                        // SET BARS
+                        case Cobalt.JSActionSetBars:
+                            JSONObject bars = data.optJSONObject(Cobalt.kJSBars);
+                            setBars(bars);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
                 default:
                     break;
             }
@@ -797,7 +812,25 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		
 		return false;
 	}
-	
+
+    private void setBars(JSONObject actionBar) {
+        Intent intent = ((CobaltActivity) mContext).getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle == null) {
+            bundle = new Bundle();
+            intent.putExtras(bundle);
+        }
+        Bundle extras = bundle.getBundle(Cobalt.kExtras);
+        if (extras == null) {
+            extras = new Bundle();
+            bundle.putBundle(Cobalt.kExtras, extras);
+        }
+
+        extras.putString(Cobalt.kBars, actionBar.toString());
+
+        ((CobaltActivity) mContext).setupBars(actionBar);
+        ((CobaltActivity) mContext).supportInvalidateOptionsMenu();
+    }
 	protected abstract void onUnhandledMessage(JSONObject message);
 	
 	/*****************************************************************************************************************

@@ -178,6 +178,7 @@ public class Cobalt {
     public final static String JSControlBars = "bars";
     public final static String JSActionActionPressed = "actionPressed";
     public final static String kJSActionName = "name";
+    public final static String JSActionSetBars = "setBars";
 
     // DATE PICKER
     public static final String JSControlPicker = "picker";
