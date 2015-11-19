@@ -376,6 +376,9 @@ public abstract class CobaltActivity extends AppCompatActivity {
 
                 Drawable overflowIconDrawable = topBar.getOverflowIcon();
                 overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+
+                Drawable navigationIconDrawable = topBar.getNavigationIcon();
+                navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
             }
             catch (IllegalArgumentException exception) {
                 if (Cobalt.DEBUG) {
