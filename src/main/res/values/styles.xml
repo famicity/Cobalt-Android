@@ -1,0 +1,6 @@
+<resources>
+
+    <style name="Theme.Cobalt" parent="@style/Theme.AppCompat.NoActionBar" />
+    <style name="Theme.Cobalt.Light" parent="@style/Theme.AppCompat.Light.NoActionBar" />
+
+</resources>

@@ -37,12 +37,19 @@ import fr.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatButton;
+import android.support.v7.widget.AppCompatImageButton;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -236,8 +243,9 @@ public abstract class CobaltActivity extends AppCompatActivity {
             && extras.containsKey(Cobalt.kBars)) {
             try {
                 JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
+                String color = actionBar.optString(Cobalt.kBarsColor);
                 JSONArray actions = actionBar.optJSONArray(Cobalt.kBarsActions);
-                if (actions != null) return setupOptionsMenu(menu, actions);
+                if (actions != null) return setupOptionsMenu(menu, color, actions);
             }
             catch (JSONException exception) {
                 if (Cobalt.DEBUG) {
@@ -313,35 +321,42 @@ public abstract class CobaltActivity extends AppCompatActivity {
 		return R.id.fragment_container;
 	}
 
+    public int getTopBarId() {
+        return R.id.top_bar;
+    }
+
     public int getBottomBarId() {
         return R.id.bottom_bar;
     }
 
     public void setupBars(JSONObject configuration) {
-        ActionBar actionBar = getSupportActionBar();
+        Toolbar topBar = (Toolbar) findViewById(getTopBarId());
         // TODO: use LinearLayout for bottomBar instead to handle groups
         //LinearLayout bottomBar = (LinearLayout) findViewById(getBottomBarId());
         BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
 
         // TODO: make bars more flexible
-        if (actionBar == null
+        if (topBar == null
             || bottomBar == null) {
             if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - setupBars: activity does not have an action bar and/or does not contain a bottom bar.");
             return;
         }
 
+        setSupportActionBar(topBar);
+        ActionBar actionBar = getSupportActionBar();
+
         // Default
-        actionBar.show();
         actionBar.setTitle(null);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         if (configuration != null) {
             // Background color
+            // TODO: apply on overflow popup
             String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor);
             try {
-                int colorInt = Cobalt.parseColor(backgroundColor);
-                actionBar.setBackgroundDrawable(new ColorDrawable(colorInt));
-                bottomBar.setBackgroundColor(colorInt);
+                int backgroundColorInt = Cobalt.parseColor(backgroundColor);
+                actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
+                bottomBar.setBackgroundColor(backgroundColorInt);
             }
             catch (IllegalArgumentException exception) {
                 if (Cobalt.DEBUG) {
@@ -351,14 +366,42 @@ public abstract class CobaltActivity extends AppCompatActivity {
             }
 
             // Color (default: system)
-            // TODO: color
+            int colorInt = 0;
+            boolean applyColor = false;
+            String color = configuration.optString(Cobalt.kBarsColor);
+            try {
+                colorInt = Cobalt.parseColor(color);
+                applyColor = true;
+                topBar.setTitleTextColor(colorInt);
+
+                Drawable overflowIconDrawable = topBar.getOverflowIcon();
+                overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+            }
+            catch (IllegalArgumentException exception) {
+                if (Cobalt.DEBUG) {
+                    Log.w(Cobalt.TAG, TAG + " - setupBars: color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                }
+                exception.printStackTrace();
+            }
 
             // Logo
             // TODO: add font support
             String logo = configuration.optString(Cobalt.kBarsIcon);
             int logoResId = getResourceIdentifier(logo);
             if (logoResId != 0) {
-                actionBar.setIcon(logoResId);
+                Drawable logoDrawable;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    logoDrawable = getResources().getDrawable(logoResId, null);
+                }
+                else {
+                    logoDrawable = getResources().getDrawable(logoResId);
+                }
+
+                if (applyColor) {
+                    logoDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                }
+
+                topBar.setLogo(logoDrawable);
                 actionBar.setDisplayShowHomeEnabled(true);
             }
 
@@ -392,13 +435,25 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
                 int iconResId = getResourceIdentifier(icon);
                 if (iconResId != 0) {
-                    actionBar.setHomeAsUpIndicator(iconResId);
+                    Drawable navigationIconDrawable;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        navigationIconDrawable = getResources().getDrawable(iconResId, null);
+                    }
+                    else {
+                        navigationIconDrawable = getResources().getDrawable(iconResId);
+                    }
+
+                    if (applyColor) {
+                        navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                    }
+
+                    topBar.setNavigationIcon(navigationIconDrawable);
                 }
             }
         }
     }
 
-    private boolean setupOptionsMenu(Menu menu, JSONArray actions) {
+    private boolean setupOptionsMenu(Menu menu, String color, JSONArray actions) {
         ActionBar actionBar = getSupportActionBar();
         // TODO: use LinearLayout for bottomBar instead to handle groups
         //LinearLayout bottomBar = (LinearLayout) findViewById(getBottomBarId());
@@ -448,10 +503,10 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 }
 
                 if (groupActions != null) {
-                    addGroup(addToMenu, order, groupActions, actionId, position);
+                    addGroup(addToMenu, order, groupActions, actionId, position, color);
                 }
                 else {
-                    addMenuItem(addToMenu, order, action, actionId++, position);
+                    addMenuItem(addToMenu, order, action, actionId++, position, color);
                 }
             }
             catch (JSONException exception) {
@@ -476,12 +531,12 @@ public abstract class CobaltActivity extends AppCompatActivity {
         return true;
     }
 
-    protected void addGroup(Menu menu, int order, JSONArray actions, int actionId, String position) {
+    protected void addGroup(Menu menu, int order, JSONArray actions, int actionId, String position, String color) {
         int length = actions.length();
         for (int i = 0; i < length; i++) {
             try {
                 JSONObject action = actions.getJSONObject(i);
-                addMenuItem(menu, order++, action, actionId++, position);
+                addMenuItem(menu, order++, action, actionId++, position, color);
             }
             catch (JSONException exception) {
                 if (Cobalt.DEBUG) {
@@ -493,19 +548,20 @@ public abstract class CobaltActivity extends AppCompatActivity {
         }
     }
 
-    protected void addMenuItem(Menu menu, int order, JSONObject action, int id, String position) {
+    protected void addMenuItem(Menu menu, int order, JSONObject action, final int id, String position, String barsColor) {
         try {
             final String name = action.getString(Cobalt.kActionName);
             String title = action.getString(Cobalt.kActionTitle);
             // TODO: add font support
             String icon = action.optString(Cobalt.kActionIcon, null);               // must be "fontKey character"
             String androidIcon = action.optString(Cobalt.kActionAndroidIcon, null);
-            // TODO: add color support & default color support
             String color = action.optString(Cobalt.kActionColor, null);             // default: same as bar color
             boolean visible = action.optBoolean(Cobalt.kActionVisible, true);
             boolean enabled = action.optBoolean(Cobalt.kActionEnabled, true);
             // TODO: add badge support
             String badge = action.optString(Cobalt.kActionBadge, null);             // if "", hide it
+
+            final MenuItem menuItem = menu.add(Menu.NONE, id, order, title);
 
             int showAsAction = MenuItem.SHOW_AS_ACTION_IF_ROOM;
             switch(position) {
@@ -516,116 +572,98 @@ public abstract class CobaltActivity extends AppCompatActivity {
                     showAsAction = MenuItem.SHOW_AS_ACTION_NEVER;
                     break;
             }
-
-            MenuItem menuItem = menu.add(Menu.NONE, id, order, title);
             MenuItemCompat.setShowAsAction(menuItem, showAsAction);
+
+            int colorInt = 0;
+            boolean applyColor = false;
+            try {
+                colorInt = Cobalt.parseColor(color);
+                applyColor = true;
+            }
+            catch (IllegalArgumentException colorException) {
+                if (Cobalt.DEBUG) {
+                    Log.w(Cobalt.TAG, TAG + " - addMenuItem: color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                }
+                colorException.printStackTrace();
+
+                try {
+                    colorInt = Cobalt.parseColor(barsColor);
+                    applyColor = true;
+                }
+                catch (IllegalArgumentException barsColorException) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + " - addMenuItem: color " + barsColor + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                    }
+                    barsColorException.printStackTrace();
+                }
+            }
+
+            View actionView;
+
             int androidIconResId = getResourceIdentifier(androidIcon);
             if (androidIconResId != 0) {
-                menuItem.setIcon(androidIconResId);
-                /*
-                AppCompatImageView imageView = new AppCompatImageView(this);
-                imageView.setImageResource(androidIconResId);
-                MenuItemCompat.setActionView(menuItem, imageView);
-                */
-            }
-            menuItem.setVisible(visible);
-            menuItem.setEnabled(enabled);
-            mMenuItemsHashMap.put(id, name);
+                Drawable androidIconDrawable;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    androidIconDrawable = getResources().getDrawable(androidIconResId, null);
+                }
+                else {
+                    androidIconDrawable = getResources().getDrawable(androidIconResId);
+                }
 
-            /*
-            View button;
+                if (applyColor) {
+                    androidIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                }
 
-            androidIconResId = getResourceIdentifier(androidIcon);
-            if (androidIconResId != 0) {
-                button = new AppCompatImageButton(this);
-                ((AppCompatImageButton) button).setImageResource(androidIconResId);
+                actionView = new AppCompatImageButton(this);
+                ((AppCompatImageButton) actionView).setImageDrawable(androidIconDrawable);
+                actionView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onOptionsItemSelected(menuItem);
+                    }
+                });
+
+                // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
             }
             else {
-                button = new AppCompatButton(this);
-                ((AppCompatButton) button).setText(title);
+                // TODO: add font support
+                // TODO: apply color for items in overflow popup
+                actionView = new AppCompatButton(this);
+                ((AppCompatButton) actionView).setText(title);
+                if (applyColor) {
+                    ((AppCompatButton) actionView).setTextColor(colorInt);
+                }
+                actionView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onOptionsItemSelected(menuItem);
+                    }
+                });
+
+                // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
             }
 
-            button.setContentDescription(title);
-
+            // TODO: find best background to mimic default behavior
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 int[] attrs = {android.R.attr.selectableItemBackgroundBorderless};
                 TypedArray styledAttrs = getTheme().obtainStyledAttributes(attrs);
                 Drawable backgroundDrawable = styledAttrs.getDrawable(0);
-                button.setBackground(backgroundDrawable);
+                actionView.setBackground(backgroundDrawable);
             }
             else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                 int[] attrs = {android.R.attr.selectableItemBackground};
                 TypedArray styledAttrs = getTheme().obtainStyledAttributes(attrs);
                 int backgroundResId = styledAttrs.getResourceId(0, 0);
-                button.setBackgroundResource(backgroundResId);
+                actionView.setBackgroundResource(backgroundResId);
             }
             else {
-                button.setBackgroundResource(android.R.drawable.menuitem_background);
+                actionView.setBackgroundResource(android.R.drawable.menuitem_background);
             }
 
-            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                int[] attrs = {android.R.attr.actionBarItemBackground};
-                TypedArray styledAttrs = getTheme().obtainStyledAttributes(attrs);
-                int backgroundResId = styledAttrs.getResourceId(0, 0);
-                button.setBackgroundResource(backgroundResId);
-            }
-            else {
-                int[] attrs = {android.R.attr.itemBackground};
-                TypedArray styledAttrs = getTheme().obtainStyledAttributes(attrs);
-                int backgroundResId = styledAttrs.getResourceId(0, 0);
-                button.setBackgroundResource(backgroundResId);
-            }
-
-            //button.setBackgroundColor(Color.parseColor("#00000000"));
-            // TODO: find best background to mimic default behavior
-            //button.setBackgroundResource(android.R.drawable.menuitem_background);
-            //button.setBackgroundResource(R.drawable.menu_item_background_dark);
-            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(getResources().getDimensionPixelSize(R.dimen.bottom_actionbar_button_size),
-                    getResources().getDimensionPixelSize(R.dimen.bottom_actionbar_button_size));
-            button.setLayoutParams(layoutParams);
-
-            int padding = getResources().getDimensionPixelSize(R.dimen.bottom_actionBar_button_padding);
-            button.setPadding(padding, padding, padding, padding);
-
-            if (visible) {
-                button.setVisibility(View.VISIBLE);
-            }
-            else {
-                button.setVisibility(View.GONE);
-            }
-
-            button.setEnabled(enabled);
-
-            button.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    Fragment fragment = getSupportFragmentManager().findFragmentById(getFragmentContainerId());
-                    if (fragment != null
-                            && CobaltFragment.class.isAssignableFrom(fragment.getClass())) {
-                        try {
-                            JSONObject data = new JSONObject();
-                            data.put(Cobalt.kJSAction, Cobalt.JSActionActionPressed);
-                            data.put(Cobalt.kJSActionName, name);
-
-                            JSONObject message = new JSONObject();
-                            message.put(Cobalt.kJSType, Cobalt.JSTypeUI);
-                            message.put(Cobalt.kJSUIControl, Cobalt.JSControlBars);
-                            message.put(Cobalt.kJSData, data);
-
-                            ((CobaltFragment) fragment).sendMessage(message);
-                        } catch (JSONException exception) {
-                            exception.printStackTrace();
-                        }
-                    } else if (Cobalt.DEBUG)
-                        Log.i(Cobalt.TAG, TAG + " - onBarsButtonClick: no fragment container found \n"
-                                + " or fragment found is not an instance of CobaltFragment. \n"
-                                + "Drop " + name + "bars button pressed event.");
-                }
-            });
-
-            bottomBar.addView(button);
-            */
+            MenuItemCompat.setActionView(menuItem, actionView);
+            menuItem.setVisible(visible);
+            menuItem.setEnabled(enabled);
+            mMenuItemsHashMap.put(id, name);
         }
         catch (JSONException exception) {
             if (Cobalt.DEBUG) {
