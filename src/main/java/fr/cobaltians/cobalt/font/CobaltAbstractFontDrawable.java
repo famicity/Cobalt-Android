@@ -31,6 +31,7 @@ package fr.cobaltians.cobalt.font;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
@@ -46,11 +47,11 @@ public abstract class CobaltAbstractFontDrawable extends Drawable {
      *
      **********************************************************************************************/
 
-    protected final Context mContext;
-    protected final String mIdentifier;
-    private final TextPaint mPaint;
-    private final float mTextSize;
-    private final int mSize;
+    protected  Context mContext;
+    protected String mIdentifier;
+    private TextPaint mPaint;
+    private float mTextSize;
+    private int mSize;
 
     /***********************************************************************************************
      *

@@ -32,6 +32,7 @@ package fr.cobaltians.cobalt.activities;
 import fr.cobaltians.cobalt.Cobalt;
 import fr.cobaltians.cobalt.R;
 import fr.cobaltians.cobalt.customviews.BottomBar;
+import fr.cobaltians.cobalt.font.CobaltFontManager;
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
 import fr.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
@@ -630,18 +631,31 @@ public abstract class CobaltActivity extends AppCompatActivity {
             }
             else {
                 // TODO: add font support
-                // TODO: apply color for items in overflow popup
-                actionView = new AppCompatButton(this);
-                ((AppCompatButton) actionView).setText(title);
-                if (applyColor) {
-                    ((AppCompatButton) actionView).setTextColor(colorInt);
+                Drawable iconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
+                if (iconDrawable != null) {
+                    actionView = new AppCompatImageButton(this);
+                    ((AppCompatImageButton) actionView).setImageDrawable(iconDrawable);
+                    actionView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onOptionsItemSelected(menuItem);
+                        }
+                    });
                 }
-                actionView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onOptionsItemSelected(menuItem);
+                else {
+                    // TODO: apply color for items in overflow popup
+                    actionView = new AppCompatButton(this);
+                    ((AppCompatButton) actionView).setText(title);
+                    if (applyColor) {
+                        ((AppCompatButton) actionView).setTextColor(colorInt);
                     }
-                });
+                    actionView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onOptionsItemSelected(menuItem);
+                        }
+                    });
+                }
 
                 // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
             }
