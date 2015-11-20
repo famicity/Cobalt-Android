@@ -261,6 +261,8 @@ public class Cobalt {
         else mResourcePath = "";
 	}
 
+    public String getResourcePathFromAsset() {return mResourcePath;}
+
     public static Context getAppContext() {
         return mContext;
     }
