@@ -965,6 +965,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
             JSONObject dataForReplace = data.optJSONObject(Cobalt.kJSData);
             boolean animated = data.optBoolean(Cobalt.kJSAnimated);
 
+			boolean clearHistory = data.optBoolean(Cobalt.kJSClearHistory, false);
+			
             Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
             if (intent != null) {
                 intent.putExtra(Cobalt.kJSAnimated, animated);
@@ -976,6 +978,10 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     intent.putExtra(Cobalt.kJSData, dataForReplace.toString());
                 }
 
+				if (clearHistory) {
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+				}
+				
                 mContext.startActivity(intent);
                 ((Activity) mContext).finish();
             }
