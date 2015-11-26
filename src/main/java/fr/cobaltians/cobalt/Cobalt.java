@@ -158,6 +158,7 @@ public class Cobalt {
     public final static String kJSController = "controller";
     public final static String kJSBars = "bars";
     public final static String kJSAnimated = "animated";
+    public final static String kJSClearHistory = "clearHistory";
 
     // BACK BUTTON
     public final static String JSEventOnBackButtonPressed = "onBackButtonPressed";
