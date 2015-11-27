@@ -349,7 +349,7 @@ public class Cobalt {
         return intent;
     }
 
-    private Bundle getConfigurationForController(String controller) {
+    public Bundle getConfigurationForController(String controller) {
         Bundle bundle = new Bundle();
 
         JSONObject configuration = getConfiguration();
