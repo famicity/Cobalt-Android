@@ -100,9 +100,18 @@ public abstract class CobaltActivity extends AppCompatActivity {
         sActivitiesArrayList.add(this);
 
         Bundle bundle = getIntent().getExtras();
-        Bundle extras = (bundle != null) ? bundle.getBundle(Cobalt.kExtras) : null;
+        if (bundle == null) {
+            bundle = new Bundle();
+        }
+        Bundle extras = bundle.getBundle(Cobalt.kExtras);
+        if (extras == null) {
+            extras = Cobalt.getInstance(this.getApplicationContext()).getConfigurationForController(getInitController());
+            extras.putString(Cobalt.kPage, getInitPage());
+            bundle.putBundle(Cobalt.kExtras, extras);
+        }
+        //Bundle extras = (bundle != null) ? bundle.getBundle(Cobalt.kExtras) : null;
 
-        if (extras != null && bundle.containsKey(Cobalt.kJSData)) {
+        if (bundle.containsKey(Cobalt.kJSData)) {
             try {
                 mDataNavigation = new JSONObject(bundle.getString(Cobalt.kJSData));
             } catch (JSONException e) {
@@ -111,7 +120,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
             }
         }
 
-        if (extras != null && extras.containsKey(Cobalt.kBars)) {
+        if (extras.containsKey(Cobalt.kBars)) {
             try {
                 JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
                 setupBars(actionBar);
@@ -132,33 +141,32 @@ public abstract class CobaltActivity extends AppCompatActivity {
             CobaltFragment fragment = getFragment();
 
             if (fragment != null) {
-                if (bundle != null) {
-                    if (extras != null) fragment.setArguments(extras);
-                    mAnimatedTransition = bundle.getBoolean(Cobalt.kJSAnimated, true);
+                fragment.setArguments(extras);
+                mAnimatedTransition = bundle.getBoolean(Cobalt.kJSAnimated, true);
 
-                    if (mAnimatedTransition) {
-                        mWasPushedAsModal = bundle.getBoolean(Cobalt.kPushAsModal, false);
-                        if (mWasPushedAsModal) {
-                            sWasPushedFromModal = true;
-                            overridePendingTransition(R.anim.modal_open_enter, android.R.anim.fade_out);
-                        }
-                        else if (bundle.getBoolean(Cobalt.kPopAsModal, false)) {
-                            sWasPushedFromModal = false;
-                            overridePendingTransition(android.R.anim.fade_in, R.anim.modal_close_exit);
-                        }
-                        else if (sWasPushedFromModal) overridePendingTransition(R.anim.modal_push_enter, R.anim.modal_push_exit);
+                if (mAnimatedTransition) {
+                    mWasPushedAsModal = bundle.getBoolean(Cobalt.kPushAsModal, false);
+                    if (mWasPushedAsModal) {
+                        sWasPushedFromModal = true;
+                        overridePendingTransition(R.anim.modal_open_enter, android.R.anim.fade_out);
                     }
-                    else overridePendingTransition(0, 0);
+                    else if (bundle.getBoolean(Cobalt.kPopAsModal, false)) {
+                        sWasPushedFromModal = false;
+                        overridePendingTransition(android.R.anim.fade_in, R.anim.modal_close_exit);
+                    }
+                    else if (sWasPushedFromModal) overridePendingTransition(R.anim.modal_push_enter, R.anim.modal_push_exit);
                 }
-
-                if (findViewById(getFragmentContainerId()) != null) {
-                    getSupportFragmentManager().beginTransaction().replace(getFragmentContainerId(), fragment).commit();
-                }
-                else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: fragment container not found");
+                else overridePendingTransition(0, 0);
             }
-            else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: getFragment() returned null");
-		}
-	}
+
+            if (findViewById(getFragmentContainerId()) != null) {
+                getSupportFragmentManager().beginTransaction().replace(getFragmentContainerId(), fragment).commit();
+            }
+            else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: fragment container not found");
+        }
+        else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: getFragment() returned null");
+    }
+
 
     @Override
     protected void onStart() {
@@ -225,6 +233,14 @@ public abstract class CobaltActivity extends AppCompatActivity {
         super.onDestroy();
 
         sActivitiesArrayList.remove(this);
+    }
+
+    public String getInitController() {
+        return null;
+    }
+
+    public String getInitPage() {
+        return null;
     }
 
     /***********************************************************************************************
