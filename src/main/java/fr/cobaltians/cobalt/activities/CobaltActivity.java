@@ -254,10 +254,14 @@ public abstract class CobaltActivity extends AppCompatActivity {
         super.onCreateOptionsMenu(menu);
 
         Bundle bundle = getIntent().getExtras();
-        Bundle extras = (bundle != null) ? bundle.getBundle(Cobalt.kExtras) : null;
-
-        if (extras != null
-            && extras.containsKey(Cobalt.kBars)) {
+        if (bundle == null) {
+            bundle = new Bundle();
+        }
+        Bundle extras = bundle.getBundle(Cobalt.kExtras);
+        if (extras == null) {
+            extras = Cobalt.getInstance(this.getApplicationContext()).getConfigurationForController(getInitController());
+        }
+        if (extras.containsKey(Cobalt.kBars)) {
             try {
                 JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
                 String color = actionBar.optString(Cobalt.kBarsColor);
