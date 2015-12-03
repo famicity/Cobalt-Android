@@ -266,7 +266,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
                 String color = actionBar.optString(Cobalt.kBarsColor);
                 JSONArray actions = actionBar.optJSONArray(Cobalt.kBarsActions);
-                if (actions != null) return setupOptionsMenu(menu, color, actions);
+                if (actions != null) setupOptionsMenu(menu, color, actions);
             }
             catch (JSONException exception) {
                 if (Cobalt.DEBUG) {
@@ -276,7 +276,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
             }
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -477,7 +477,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
         }
     }
 
-    private boolean setupOptionsMenu(Menu menu, String color, JSONArray actions) {
+    private void setupOptionsMenu(Menu menu, String color, JSONArray actions) {
         ActionBar actionBar = getSupportActionBar();
         // TODO: use LinearLayout for bottomBar instead to handle groups
         //LinearLayout bottomBar = (LinearLayout) findViewById(getBottomBarId());
@@ -488,7 +488,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
             if (Cobalt.DEBUG) {
                 Log.w(Cobalt.TAG, TAG + " - setupOptionsMenu: activity does not have an action bar and/or does not contain a bottom bar.");
             }
-            return false;
+            return;
         }
 
         int actionId = 0;
@@ -552,7 +552,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
         }
 
         // true to display menu
-        return true;
+        // return true;
     }
 
     protected void addGroup(Menu menu, int order, JSONArray actions, int actionId, String position, String color) {
