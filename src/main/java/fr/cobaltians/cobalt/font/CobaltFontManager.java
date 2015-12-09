@@ -77,34 +77,38 @@ public class CobaltFontManager {
     //* @param padding the padding in dp
     public static CobaltAbstractFontDrawable getCobaltFontDrawable(Context context, String identifier, int color) {
         mContext = context;
-        if (identifier.contains(" ")) {
-            String[] splitIdentifier = identifier.split(" ");
-            String fontName = splitIdentifier[0];
-            Class<? extends CobaltAbstractFontDrawable> fontClass = getFonts().get(fontName);
-            if (fontClass != null) {
-                try {
-                    Class[] argsClass = new Class[] {Context.class, String.class, int.class};
-                    Object[] arrayArgs = new Object[] {context, splitIdentifier[1], color };
-                    Constructor fontConstructor = fontClass.getDeclaredConstructor(argsClass);
+        if (identifier != null) {
+            if (identifier.contains(" ")) {
+                String[] splitIdentifier = identifier.split(" ");
+                String fontName = splitIdentifier[0];
+                Class<? extends CobaltAbstractFontDrawable> fontClass = getFonts().get(fontName);
+                if (fontClass != null) {
                     try {
-                        return (CobaltAbstractFontDrawable) fontConstructor.newInstance(arrayArgs);
-                    } catch (InstantiationException e) {
-                        if (Cobalt.DEBUG) Log.e(TAG, "- getCobaltFontDrawable: exception in Instantiation of fontClass");
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        if (Cobalt.DEBUG) Log.e(TAG, "- getCobaltFontDrawable");
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        if (Cobalt.DEBUG) Log.e(TAG, "- getCobaltFontDrawable");
+                        Class[] argsClass = new Class[] {Context.class, String.class, int.class};
+                        Object[] arrayArgs = new Object[] {context, splitIdentifier[1], color };
+                        Constructor fontConstructor = fontClass.getDeclaredConstructor(argsClass);
+                        try {
+                            return (CobaltAbstractFontDrawable) fontConstructor.newInstance(arrayArgs);
+                        } catch (InstantiationException e) {
+                            if (Cobalt.DEBUG) Log.e(TAG, "- getCobaltFontDrawable: exception in Instantiation of fontClass");
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            if (Cobalt.DEBUG) Log.e(TAG, "- getCobaltFontDrawable");
+                            e.printStackTrace();
+                        } catch (InvocationTargetException e) {
+                            if (Cobalt.DEBUG) Log.e(TAG, "- getCobaltFontDrawable");
+                            e.printStackTrace();
+                        }
+                    } catch (NoSuchMethodException e) {
                         e.printStackTrace();
                     }
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
                 }
+                else if (Cobalt.DEBUG) Log.e(TAG, "- getCobaltFontDrawable: no font class found for name " + fontName + ".");
             }
-            else if (Cobalt.DEBUG) Log.e(TAG, "- getCobaltFontDrawable: no font class found for name " + fontName + ".");
+            else if (Cobalt.DEBUG) Log.e(TAG, TAG + " - getCobaltFontDrawable : no space separate in identifier");
         }
-        else if (Cobalt.DEBUG) Log.e(TAG, TAG + " - getCobaltFontDrawable : no space separate in identifier");
+        else if (Cobalt.DEBUG) Log.e(TAG, TAG + " - getCobaltFontDrawable: identifier for icon is null");
+
         return null;
     }
 

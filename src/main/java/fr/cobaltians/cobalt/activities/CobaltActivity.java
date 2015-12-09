@@ -439,8 +439,11 @@ public abstract class CobaltActivity extends AppCompatActivity {
             JSONObject visible = configuration.optJSONObject(Cobalt.kBarsVisible);
             if (visible != null) {
                 boolean top = visible.optBoolean(Cobalt.kVisibleTop, true);
-                if (!top) {
+                if (!top && actionBar.isShowing()) {
                     actionBar.hide();
+                }
+                else if (top && !actionBar.isShowing()){
+                    actionBar.show();
                 }
 
                 boolean bottom = visible.optBoolean(Cobalt.kVisibleBottom);
@@ -616,7 +619,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 }
                 catch (IllegalArgumentException barsColorException) {
                     if (Cobalt.DEBUG) {
-                        Log.w(Cobalt.TAG, TAG + " - addMenuItem: color " + barsColor + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                        Log.w(Cobalt.TAG, TAG + " - addMenuItem: barscolor " + barsColor + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
                     }
                     barsColorException.printStackTrace();
                 }
