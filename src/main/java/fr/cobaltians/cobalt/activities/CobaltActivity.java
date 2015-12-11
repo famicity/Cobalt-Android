@@ -409,22 +409,26 @@ public abstract class CobaltActivity extends AppCompatActivity {
             }
 
             // Logo
-            // TODO: add font support
             String logo = configuration.optString(Cobalt.kBarsIcon);
-            int logoResId = getResourceIdentifier(logo);
-            if (logoResId != 0) {
+            if (!logo.equals("")) {
                 Drawable logoDrawable;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    logoDrawable = getResources().getDrawable(logoResId, null);
+
+                int logoResId = getResourceIdentifier(logo);
+                if (logoResId != 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        logoDrawable = getResources().getDrawable(logoResId, null);
+                    }
+                    else {
+                        logoDrawable = getResources().getDrawable(logoResId);
+                    }
+
+                    if (applyColor) {
+                        logoDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                    }
                 }
                 else {
-                    logoDrawable = getResources().getDrawable(logoResId);
+                    logoDrawable = CobaltFontManager.getCobaltFontDrawable(this, logo, colorInt);
                 }
-
-                if (applyColor) {
-                    logoDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
-                }
-
                 topBar.setLogo(logoDrawable);
                 actionBar.setDisplayShowHomeEnabled(true);
             }
@@ -457,23 +461,25 @@ public abstract class CobaltActivity extends AppCompatActivity {
             if (navigationIcon != null) {
                 boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
                 actionBar.setDisplayHomeAsUpEnabled(enabled);
+                Drawable navigationIconDrawable;
 
-                // TODO: add font support
                 String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
-                int iconResId = getResourceIdentifier(icon);
-                if (iconResId != 0) {
-                    Drawable navigationIconDrawable;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        navigationIconDrawable = getResources().getDrawable(iconResId, null);
+                if (!icon.equals("")) {
+                    int iconResId = getResourceIdentifier(icon);
+                    if (iconResId != 0) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            navigationIconDrawable = getResources().getDrawable(iconResId, null);
+                        }
+                        else {
+                            navigationIconDrawable = getResources().getDrawable(iconResId);
+                        }
+                        if (applyColor) {
+                            navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                        }
                     }
                     else {
-                        navigationIconDrawable = getResources().getDrawable(iconResId);
+                        navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
                     }
-
-                    if (applyColor) {
-                        navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
-                    }
-
                     topBar.setNavigationIcon(navigationIconDrawable);
                 }
             }
@@ -579,7 +585,6 @@ public abstract class CobaltActivity extends AppCompatActivity {
         try {
             final String name = action.getString(Cobalt.kActionName);
             String title = action.getString(Cobalt.kActionTitle);
-            // TODO: add font support
             String icon = action.optString(Cobalt.kActionIcon, null);               // must be "fontKey character"
             String androidIcon = action.optString(Cobalt.kActionAndroidIcon, null);
             String color = action.optString(Cobalt.kActionColor, null);             // default: same as bar color
@@ -653,7 +658,6 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
             }
             else {
-                // TODO: add font support
                 Drawable iconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
                 if (iconDrawable != null) {
                     actionView = new AppCompatImageButton(this);
@@ -682,6 +686,9 @@ public abstract class CobaltActivity extends AppCompatActivity {
 
                 // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
             }
+
+            // badge
+
 
             // TODO: find best background to mimic default behavior
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
