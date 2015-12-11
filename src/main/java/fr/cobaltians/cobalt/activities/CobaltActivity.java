@@ -31,6 +31,8 @@ package fr.cobaltians.cobalt.activities;
 
 import fr.cobaltians.cobalt.Cobalt;
 import fr.cobaltians.cobalt.R;
+import fr.cobaltians.cobalt.customviews.ActionViewMenuItem;
+import fr.cobaltians.cobalt.customviews.ActionViewMenuItemListener;
 import fr.cobaltians.cobalt.customviews.BottomBar;
 import fr.cobaltians.cobalt.font.CobaltFontManager;
 import fr.cobaltians.cobalt.fragments.CobaltFragment;
@@ -55,6 +57,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +70,7 @@ import org.json.JSONObject;
  * {@link Activity} containing a {@link CobaltFragment}.
  * @author Diane
  */
-public abstract class CobaltActivity extends AppCompatActivity {
+public abstract class CobaltActivity extends AppCompatActivity implements ActionViewMenuItemListener {
 
     protected static final String TAG = CobaltActivity.class.getSimpleName();
 
@@ -559,9 +562,6 @@ public abstract class CobaltActivity extends AppCompatActivity {
             spaceMenuItem.setVisible(true);
             spaceMenuItem.setEnabled(false);
         }
-
-        // true to display menu
-        // return true;
     }
 
     protected void addGroup(Menu menu, int order, JSONArray actions, int actionId, String position, String color) {
@@ -630,82 +630,7 @@ public abstract class CobaltActivity extends AppCompatActivity {
                 }
             }
 
-            View actionView;
-
-            int androidIconResId = getResourceIdentifier(androidIcon);
-            if (androidIconResId != 0) {
-                Drawable androidIconDrawable;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    androidIconDrawable = getResources().getDrawable(androidIconResId, null);
-                }
-                else {
-                    androidIconDrawable = getResources().getDrawable(androidIconResId);
-                }
-
-                if (applyColor) {
-                    androidIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
-                }
-
-                actionView = new AppCompatImageButton(this);
-                ((AppCompatImageButton) actionView).setImageDrawable(androidIconDrawable);
-                actionView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onOptionsItemSelected(menuItem);
-                    }
-                });
-
-                // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
-            }
-            else {
-                Drawable iconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
-                if (iconDrawable != null) {
-                    actionView = new AppCompatImageButton(this);
-                    ((AppCompatImageButton) actionView).setImageDrawable(iconDrawable);
-                    actionView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onOptionsItemSelected(menuItem);
-                        }
-                    });
-                }
-                else {
-                    // TODO: apply color for items in overflow popup
-                    actionView = new AppCompatButton(this);
-                    ((AppCompatButton) actionView).setText(title);
-                    if (applyColor) {
-                        ((AppCompatButton) actionView).setTextColor(colorInt);
-                    }
-                    actionView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onOptionsItemSelected(menuItem);
-                        }
-                    });
-                }
-
-                // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
-            }
-
-            // badge
-
-
-            // TODO: find best background to mimic default behavior
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                int[] attrs = {android.R.attr.selectableItemBackgroundBorderless};
-                TypedArray styledAttrs = getTheme().obtainStyledAttributes(attrs);
-                Drawable backgroundDrawable = styledAttrs.getDrawable(0);
-                actionView.setBackground(backgroundDrawable);
-            }
-            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                int[] attrs = {android.R.attr.selectableItemBackground};
-                TypedArray styledAttrs = getTheme().obtainStyledAttributes(attrs);
-                int backgroundResId = styledAttrs.getResourceId(0, 0);
-                actionView.setBackgroundResource(backgroundResId);
-            }
-            else {
-                actionView.setBackgroundResource(android.R.drawable.menuitem_background);
-            }
+            ActionViewMenuItem actionView = new ActionViewMenuItem(this, action, barsColor);
 
             MenuItemCompat.setActionView(menuItem, actionView);
             menuItem.setVisible(visible);
@@ -723,6 +648,8 @@ public abstract class CobaltActivity extends AppCompatActivity {
             exception.printStackTrace();
         }
     }
+
+
 
     public int getResourceIdentifier(String resource) {
         int resId = 0;
@@ -896,5 +823,22 @@ public abstract class CobaltActivity extends AppCompatActivity {
 
     public void setDataNavigation(JSONObject data) {
         this.mDataNavigation = data;
+    }
+
+    @Override
+    public void onPressed(String name) {
+        CobaltFragment fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
+        JSONObject message = new JSONObject();
+        JSONObject data = new JSONObject();
+        try {
+            message.put(Cobalt.kJSType, Cobalt.JSTypeUI);
+            message.put(Cobalt.kJSUIControl, Cobalt.JSControlBars);
+            data.put(Cobalt.kJSAction, Cobalt.JSActionActionPressed);
+            data.put(Cobalt.kJSActionName, name);
+            message.put(Cobalt.kJSData, data);
+            fragment.sendMessage(message);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
