@@ -241,7 +241,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         return R.id.swipe_refresh_container;
     }
 
-	/**
+	/**c
 	 * Sets up listeners for components inflated from the given layout and the parent view.
 	 * This method should be overridden in subclasses.
 	 */
@@ -783,6 +783,15 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             JSONObject bars = data.optJSONObject(Cobalt.kJSBars);
                             setBars(bars);
                             break;
+                        case Cobalt.JSActionSetActionBadge:
+                            String name = data.optString(Cobalt.kActionName, null);
+                            String badge = data.optString(Cobalt.kActionBadge, null);
+                            ((CobaltActivity)getActivity()).setBadgeMenuItem(name, badge);
+                            break;
+                        case Cobalt.JSActionSetActionContent:
+                            String nameContent = data.optString(Cobalt.kActionName, null);
+                            JSONObject content = data.optJSONObject(Cobalt.kContent);
+                            ((CobaltActivity)getActivity()).setContentMenuItem(nameContent, content);
                         default:
                             break;
                     }

@@ -86,7 +86,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     private static boolean sWasPushedFromModal = false;
 
     // BARS
-    private HashMap<Integer, String> mMenuItemsHashMap = new HashMap<>();
+    //private HashMap<Integer, String> mMenuItemsHashMap = new HashMap<>();
+    private HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
 
     /***********************************************************************************************
      *
@@ -284,7 +285,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
+        /*int itemId = item.getItemId();
         if (mMenuItemsHashMap.containsKey(itemId)) {
             String name = mMenuItemsHashMap.get(item.getItemId());
 
@@ -315,7 +316,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             onBackPressed();
             return true;
         }
-        else return super.onOptionsItemSelected(item);
+        else */
+        return super.onOptionsItemSelected(item);
     }
 
     /***********************************************************************************************
@@ -581,17 +583,37 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
     }
 
+    public void setBadgeMenuItem(String name, final String badgeText){
+        if (mMenuItemsHashMap.containsKey(name)) {
+            final ActionViewMenuItem item = mMenuItemsHashMap.get(name);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    item.setActionBadge(badgeText);
+                }
+            });
+        }
+    }
+
+    public void setContentMenuItem(String name, final JSONObject content){
+        if (mMenuItemsHashMap.containsKey(name)) {
+            final ActionViewMenuItem item = mMenuItemsHashMap.get(name);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    item.setActionContent(content);
+                }
+            });
+        }
+    }
+
     protected void addMenuItem(Menu menu, int order, JSONObject action, final int id, String position, String barsColor) {
         try {
             final String name = action.getString(Cobalt.kActionName);
             String title = action.getString(Cobalt.kActionTitle);
-            String icon = action.optString(Cobalt.kActionIcon, null);               // must be "fontKey character"
-            String androidIcon = action.optString(Cobalt.kActionAndroidIcon, null);
             String color = action.optString(Cobalt.kActionColor, null);             // default: same as bar color
             boolean visible = action.optBoolean(Cobalt.kActionVisible, true);
             boolean enabled = action.optBoolean(Cobalt.kActionEnabled, true);
-            // TODO: add badge support
-            String badge = action.optString(Cobalt.kActionBadge, null);             // if "", hide it
 
             final MenuItem menuItem = menu.add(Menu.NONE, id, order, title);
 
@@ -635,7 +657,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             MenuItemCompat.setActionView(menuItem, actionView);
             menuItem.setVisible(visible);
             menuItem.setEnabled(enabled);
-            mMenuItemsHashMap.put(id, name);
+           // mMenuItemsHashMap.put(id, name);
+            mMenuItemsHashMap.put(name, actionView);
         }
         catch (JSONException exception) {
             if (Cobalt.DEBUG) {

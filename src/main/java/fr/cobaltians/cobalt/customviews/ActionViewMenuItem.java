@@ -34,6 +34,8 @@ public class ActionViewMenuItem extends RelativeLayout {
     private Context mContext;
 
     private TextView mBadgeTv;
+    private ImageButton mImageButton;
+    private Button mButton;
 
     LayoutInflater mInflater;
 
@@ -85,8 +87,8 @@ public class ActionViewMenuItem extends RelativeLayout {
             boolean enabled = mAction.optBoolean(Cobalt.kActionEnabled, true);
             String badge = mAction.optString(Cobalt.kActionBadge, null);             // if "", hide it
 
-            ImageButton imageButton = (ImageButton) findViewById(R.id.image_button_item);
-            Button button = (Button) findViewById(R.id.button_item);
+            mImageButton = (ImageButton) findViewById(R.id.image_button_item);
+            mButton = (Button) findViewById(R.id.button_item);
 
             if (androidIcon != null || icon != null) {
 
@@ -95,15 +97,15 @@ public class ActionViewMenuItem extends RelativeLayout {
                 else idResource = getResource(icon);
 
                 if (idResource != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    imageButton.setImageDrawable(mContext.getDrawable(idResource));
+                    mImageButton.setImageDrawable(mContext.getDrawable(idResource));
                 }
 
-                imageButton.setEnabled(enabled);
+                mImageButton.setEnabled(enabled);
 
                 if (visible) {
-                    imageButton.setVisibility(VISIBLE);
+                    mImageButton.setVisibility(VISIBLE);
                 }
-                else imageButton.setVisibility(GONE);
+                else mImageButton.setVisibility(GONE);
 
                 if (badge != null && badge.length()>0) {
                     mBadgeTv = (TextView) findViewById(R.id.badge_item);
@@ -118,7 +120,7 @@ public class ActionViewMenuItem extends RelativeLayout {
                         drawableBadge.setStroke(1, Cobalt.parseColor(color));
                      */
                 }
-                imageButton.setOnClickListener(new OnClickListener() {
+                mImageButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         ((CobaltActivity)mContext).onPressed(mName);
@@ -127,10 +129,10 @@ public class ActionViewMenuItem extends RelativeLayout {
                 // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
             }
             else {
-                button.setText(title);
-                if (color != null) button.setTextColor(Cobalt.parseColor(color));
-                button.setEnabled(enabled);
-                button.setOnClickListener(new OnClickListener() {
+                mButton.setText(title);
+                if (color != null) mButton.setTextColor(Cobalt.parseColor(color));
+                mButton.setEnabled(enabled);
+                mButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         ((CobaltActivity)mContext).onPressed(mName);
@@ -188,7 +190,22 @@ public class ActionViewMenuItem extends RelativeLayout {
         }
     }
 
-    public void setActionContext(Context context) {
-        //TODO something
+    public void setActionContent(JSONObject content) {
+        String androidIcon = content.optString(Cobalt.kActionAndroidIcon, null);
+        String title = mAction.optString(Cobalt.kActionTitle, null);
+        String icon = mAction.optString(Cobalt.kActionIcon, null);
+        String color = mAction.optString(Cobalt.kActionColor, null);
+
+        if (title != null) mButton.setText(title);
+        if (color != null) mButton.setTextColor(Cobalt.parseColor(color));
+
+        if (androidIcon != null || icon != null) {
+            int idResource;
+            if (androidIcon != null)  idResource = getResource(androidIcon);
+            else idResource = getResource(icon);
+            if (idResource != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+            }
+        }
     }
 }
