@@ -615,7 +615,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         try {
             final String name = action.getString(Cobalt.kActionName);
             String title = action.getString(Cobalt.kActionTitle);
-            String color = action.optString(Cobalt.kActionColor, null);             // default: same as bar color
+            String color = action.optString(Cobalt.kActionColor, barsColor);             // default: same as bar color
             boolean visible = action.optBoolean(Cobalt.kActionVisible, true);
             boolean enabled = action.optBoolean(Cobalt.kActionEnabled, true);
 
