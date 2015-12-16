@@ -505,6 +505,11 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             return;
         }
 
+        Menu bottomMenu = bottomBar.getMenu();
+
+        menu.clear();
+        bottomMenu.clear();
+
         int actionId = 0;
         int menuItemsAddedToTop = 0;
         int menuItemsAddedToOverflow = 0;
@@ -529,7 +534,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                         break;
                     case Cobalt.kPositionBottom:
                         order = menuItemsAddedToBottom++;
-                        addToMenu = bottomBar.getMenu();
+                        addToMenu = bottomMenu;
 
                         MenuItem spaceMenuItem = addToMenu.add(Menu.NONE, Menu.NONE, order++, "");
                         MenuItemCompat.setShowAsAction(spaceMenuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -558,7 +563,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
 
         if (menuItemsAddedToBottom > 0) {
-            Menu bottomMenu = bottomBar.getMenu();
             MenuItem spaceMenuItem = bottomMenu.add(Menu.NONE, Menu.NONE, menuItemsAddedToBottom, "");
             MenuItemCompat.setShowAsAction(spaceMenuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
             spaceMenuItem.setVisible(true);
