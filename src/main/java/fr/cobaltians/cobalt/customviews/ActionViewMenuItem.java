@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import fr.cobaltians.cobalt.Cobalt;
 import fr.cobaltians.cobalt.R;
 import fr.cobaltians.cobalt.activities.CobaltActivity;
+import fr.cobaltians.cobalt.font.CobaltFontManager;
 
 /**
  * Created by sebastienfamel on 10/12/15.
@@ -96,8 +97,14 @@ public class ActionViewMenuItem extends RelativeLayout {
                 if (androidIcon != null) idResource = getResource(androidIcon);
                 else idResource = getResource(icon);
 
-                if (idResource != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+                if (idResource != 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+                    }
+                    else mImageButton.setImageDrawable(mContext.getResources().getDrawable(idResource));
+                }
+                else {
+                    mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, Cobalt.parseColor(mColor)));
                 }
 
                 mImageButton.setEnabled(enabled);

@@ -657,7 +657,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             MenuItemCompat.setActionView(menuItem, actionView);
             menuItem.setVisible(visible);
             menuItem.setEnabled(enabled);
-           // mMenuItemsHashMap.put(id, name);
             mMenuItemsHashMap.put(name, actionView);
         }
         catch (JSONException exception) {
