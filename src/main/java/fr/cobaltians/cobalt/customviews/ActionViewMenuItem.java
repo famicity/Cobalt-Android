@@ -83,13 +83,14 @@ public class ActionViewMenuItem extends RelativeLayout {
             String title = mAction.getString(Cobalt.kActionTitle);
             String icon = mAction.optString(Cobalt.kActionIcon, null);               // must be "fontKey character"
             String androidIcon = mAction.optString(Cobalt.kActionAndroidIcon, null);
-            String color = mAction.optString(Cobalt.kActionColor, null);             // default: same as bar color
+            String color = mAction.optString(Cobalt.kActionColor, mColor);             // default: same as bar color
             boolean visible = mAction.optBoolean(Cobalt.kActionVisible, true);
             boolean enabled = mAction.optBoolean(Cobalt.kActionEnabled, true);
             String badge = mAction.optString(Cobalt.kActionBadge, null);             // if "", hide it
 
             mImageButton = (ImageButton) findViewById(R.id.image_button_item);
             mButton = (Button) findViewById(R.id.button_item);
+            mBadgeTv = (TextView) findViewById(R.id.badge_item);
 
             if (androidIcon != null || icon != null) {
 
@@ -115,7 +116,6 @@ public class ActionViewMenuItem extends RelativeLayout {
                 else mImageButton.setVisibility(GONE);
 
                 if (badge != null && badge.length()>0) {
-                    mBadgeTv = (TextView) findViewById(R.id.badge_item);
                     mBadgeTv.setText(badge);
                     mBadgeTv.setVisibility(VISIBLE);
                     /*
@@ -184,9 +184,9 @@ public class ActionViewMenuItem extends RelativeLayout {
                 return apkResource.getIdentifier(drawableName, "drawable", packName);
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
-                return 0;
             }
         }
+        return 0;
     }
 
     public String getName(){ return mName;}
@@ -194,6 +194,11 @@ public class ActionViewMenuItem extends RelativeLayout {
     public void setActionBadge(String text) {
         if (text.length()>0 && !text.equals("")) {
             mBadgeTv.setText(text);
+            mBadgeTv.setVisibility(View.VISIBLE);
+        }
+        else {
+            mBadgeTv.setText("");
+            mBadgeTv.setVisibility(View.GONE);
         }
     }
 
@@ -210,8 +215,14 @@ public class ActionViewMenuItem extends RelativeLayout {
             int idResource;
             if (androidIcon != null)  idResource = getResource(androidIcon);
             else idResource = getResource(icon);
-            if (idResource != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+            if (idResource != 0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+                }
+                else mImageButton.setImageDrawable(mContext.getResources().getDrawable(idResource));
+            }
+            else {
+                mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, Cobalt.parseColor(mColor)));
             }
         }
     }
