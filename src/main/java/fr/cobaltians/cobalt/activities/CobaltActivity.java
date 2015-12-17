@@ -87,7 +87,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
     // BARS
     //private HashMap<Integer, String> mMenuItemsHashMap = new HashMap<>();
-    private HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
+    protected HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
 
     /***********************************************************************************************
      *

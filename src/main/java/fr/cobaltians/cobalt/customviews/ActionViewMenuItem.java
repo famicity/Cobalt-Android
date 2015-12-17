@@ -28,17 +28,17 @@ import fr.cobaltians.cobalt.font.CobaltFontManager;
  */
 public class ActionViewMenuItem extends RelativeLayout {
 
-    private String mName;
-    private JSONObject mAction;
-    private String mColor;
-    private ActionViewMenuItemListener mListener;
-    private Context mContext;
+    protected String mName;
+    protected JSONObject mAction;
+    protected String mColor;
+    protected ActionViewMenuItemListener mListener;
+    protected Context mContext;
 
-    private TextView mBadgeTv;
-    private ImageButton mImageButton;
-    private Button mButton;
+    protected TextView mBadgeTv;
+    protected ImageButton mImageButton;
+    protected Button mButton;
 
-    LayoutInflater mInflater;
+    protected LayoutInflater mInflater;
 
     public ActionViewMenuItem(Context context) {
         super(context);
@@ -77,7 +77,7 @@ public class ActionViewMenuItem extends RelativeLayout {
         init();
     }
 
-    public void init() {
+    protected void init() {
         mInflater.inflate(R.layout.custom_action_view_menu_item, this, true);
         try {
             String title = mAction.getString(Cobalt.kActionTitle);
@@ -170,7 +170,7 @@ public class ActionViewMenuItem extends RelativeLayout {
         }
     }
 
-    public int getResource(String imageLink) {
+    protected int getResource(String imageLink) {
         if (!imageLink.contains(":")) {
             return this.getResources().getIdentifier(imageLink,"drawable", mContext.getPackageName());
         }
