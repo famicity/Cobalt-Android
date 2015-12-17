@@ -535,11 +535,11 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                     case Cobalt.kPositionBottom:
                         order = menuItemsAddedToBottom++;
                         addToMenu = bottomMenu;
-
-                        MenuItem spaceMenuItem = addToMenu.add(Menu.NONE, Menu.NONE, order++, "");
+                        // TODO find a way to add same space between each actionViewItem
+                        /*MenuItem spaceMenuItem = addToMenu.add(Menu.NONE, Menu.NONE, order++, "");
                         MenuItemCompat.setShowAsAction(spaceMenuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
                         spaceMenuItem.setVisible(true);
-                        spaceMenuItem.setEnabled(false);
+                        spaceMenuItem.setEnabled(false);*/
                         break;
                     default:
                         throw new JSONException("androidPosition attribute must be top, overflow or bottom.");
@@ -562,12 +562,12 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             }
         }
 
-        if (menuItemsAddedToBottom > 0) {
+        /*if (menuItemsAddedToBottom > 0) {
             MenuItem spaceMenuItem = bottomMenu.add(Menu.NONE, Menu.NONE, menuItemsAddedToBottom, "");
             MenuItemCompat.setShowAsAction(spaceMenuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
             spaceMenuItem.setVisible(true);
             spaceMenuItem.setEnabled(false);
-        }
+        }*/
     }
 
     protected void addGroup(Menu menu, int order, JSONArray actions, int actionId, String position, String color) {
