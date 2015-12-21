@@ -459,6 +459,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 if (bottom) {
                     bottomBar.setVisibility(View.VISIBLE);
                 }
+                else bottomBar.setVisibility(View.GONE);
             }
 
             // Up
