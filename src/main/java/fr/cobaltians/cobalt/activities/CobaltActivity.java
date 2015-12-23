@@ -285,8 +285,12 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        /*int itemId = item.getItemId();
-        if (mMenuItemsHashMap.containsKey(itemId)) {
+        int itemId = item.getItemId();
+        if (itemId == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        /*if (mMenuItemsHashMap.containsKey(itemId)) {
             String name = mMenuItemsHashMap.get(item.getItemId());
 
             Fragment fragment = getSupportFragmentManager().findFragmentById(getFragmentContainerId());
@@ -311,12 +315,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                     + "Drop " + name + "bars button pressed event.");
 
             return true;
-        }
-        else if (itemId == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        else */
+        }*/
         return super.onOptionsItemSelected(item);
     }
 
