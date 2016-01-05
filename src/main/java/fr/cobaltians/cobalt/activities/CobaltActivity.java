@@ -243,11 +243,17 @@ public abstract class CobaltActivity extends AppCompatActivity {
         }
 
         return false;
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (mMenuItemsHashMap.containsKey(item.getItemId())) {
+        int itemId = item.getItemId();
+        if (itemId == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+
+        /*if (mMenuItemsHashMap.containsKey(item.getItemId())) {
             String name = mMenuItemsHashMap.get(item.getItemId());
 
             Fragment fragment = getSupportFragmentManager().findFragmentById(getFragmentContainerId());
@@ -272,10 +278,10 @@ public abstract class CobaltActivity extends AppCompatActivity {
                     + "Drop " + name + "bars button pressed event.");
 
             return true;
-        }
-        else return super.onOptionsItemSelected(item);
+        }*/
+        return super.onOptionsItemSelected(item);
     }
-    */
+
 
     /***************************************************************************************************************************************************************
 	 * COBALT
@@ -513,10 +519,10 @@ public abstract class CobaltActivity extends AppCompatActivity {
 
 	/**
 	 * Called from the contained {@link CobaltFragment} when the Web view has authorized the back event.
-	 * This method should NOT be overridden in subclasses.
-	 */
-	public void back() {
-		runOnUiThread(new Runnable() {
+     * This method should NOT be overridden in subclasses.
+     */
+    public void back() {
+        runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
