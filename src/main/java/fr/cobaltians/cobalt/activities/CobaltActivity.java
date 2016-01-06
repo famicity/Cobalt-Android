@@ -93,9 +93,17 @@ public abstract class CobaltActivity extends AppCompatActivity {
         sActivitiesArrayList.add(this);
 
         Bundle bundle = getIntent().getExtras();
-        Bundle extras = (bundle != null) ? bundle.getBundle(Cobalt.kExtras) : null;
+        if (bundle == null) {
+            bundle = new Bundle();
+        }
+        Bundle extras = bundle.getBundle(Cobalt.kExtras);
+        if (extras == null) {
+            extras = Cobalt.getInstance(this.getApplicationContext()).getConfigurationForController(getInitController());
+            extras.putString(Cobalt.kPage, getInitPage());
+            bundle.putBundle(Cobalt.kExtras, extras);
+        }
 
-        if (extras != null && bundle.containsKey(Cobalt.kJSData)) {
+        if (bundle.containsKey(Cobalt.kJSData)) {
             try {
                 mDataNavigation = new JSONObject(bundle.getString(Cobalt.kJSData));
             } catch (JSONException e) {
@@ -215,6 +223,14 @@ public abstract class CobaltActivity extends AppCompatActivity {
         super.onDestroy();
 
         sActivitiesArrayList.remove(this);
+    }
+
+    public String getInitController() {
+        return null;
+    }
+
+    public String getInitPage() {
+        return null;
     }
 
     /**************************************************************************************************
