@@ -30,7 +30,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="fr.cobaltians.cobalt">
+    package="org.cobaltians.cobalt">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
