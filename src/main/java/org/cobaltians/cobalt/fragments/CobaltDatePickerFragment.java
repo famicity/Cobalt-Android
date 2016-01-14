@@ -27,9 +27,9 @@
  *
  */
 
-package fr.cobaltians.cobalt.fragments;
+package org.cobaltians.cobalt.fragments;
 
-import fr.cobaltians.cobalt.R;
+import org.cobaltians.cobalt.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;

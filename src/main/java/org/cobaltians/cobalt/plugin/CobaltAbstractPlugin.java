@@ -27,7 +27,7 @@
  *
  */
 
-package fr.cobaltians.cobalt.plugin;
+package org.cobaltians.cobalt.plugin;
 
 import java.util.Vector;
 

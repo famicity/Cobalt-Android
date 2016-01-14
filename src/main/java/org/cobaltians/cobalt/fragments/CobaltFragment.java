@@ -27,20 +27,20 @@
  *
  */
 
-package fr.cobaltians.cobalt.fragments;
+package org.cobaltians.cobalt.fragments;
 
 import android.content.ComponentName;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import fr.cobaltians.cobalt.Cobalt;
-import fr.cobaltians.cobalt.R;
-import fr.cobaltians.cobalt.activities.CobaltActivity;
-import fr.cobaltians.cobalt.customviews.CobaltSwipeRefreshLayout;
-import fr.cobaltians.cobalt.customviews.IScrollListener;
-import fr.cobaltians.cobalt.customviews.OverScrollingWebView;
-import fr.cobaltians.cobalt.database.LocalStorageJavaScriptInterface;
-import fr.cobaltians.cobalt.plugin.CobaltPluginManager;
+import org.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.R;
+import org.cobaltians.cobalt.activities.CobaltActivity;
+import org.cobaltians.cobalt.customviews.CobaltSwipeRefreshLayout;
+import org.cobaltians.cobalt.customviews.IScrollListener;
+import org.cobaltians.cobalt.customviews.OverScrollingWebView;
+import org.cobaltians.cobalt.database.LocalStorageJavaScriptInterface;
+import org.cobaltians.cobalt.plugin.CobaltPluginManager;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

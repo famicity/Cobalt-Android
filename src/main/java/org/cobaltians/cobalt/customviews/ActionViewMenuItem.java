@@ -1,4 +1,4 @@
-package fr.cobaltians.cobalt.customviews;
+package org.cobaltians.cobalt.customviews;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -18,10 +18,10 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import fr.cobaltians.cobalt.Cobalt;
-import fr.cobaltians.cobalt.R;
-import fr.cobaltians.cobalt.activities.CobaltActivity;
-import fr.cobaltians.cobalt.font.CobaltFontManager;
+import org.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.R;
+import org.cobaltians.cobalt.activities.CobaltActivity;
+import org.cobaltians.cobalt.font.CobaltFontManager;
 
 /**
  * Created by sebastienfamel on 10/12/15.

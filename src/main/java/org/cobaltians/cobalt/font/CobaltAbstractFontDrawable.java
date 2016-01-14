@@ -27,7 +27,7 @@
  *
  */
 
-package fr.cobaltians.cobalt.font;
+package org.cobaltians.cobalt.font;
 
 import android.content.Context;
 import android.graphics.Canvas;

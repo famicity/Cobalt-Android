@@ -27,11 +27,11 @@
  *
  */
 
-package fr.cobaltians.cobalt;
+package org.cobaltians.cobalt;
 
-import fr.cobaltians.cobalt.activities.CobaltActivity;
-import fr.cobaltians.cobalt.fragments.CobaltFragment;
-import fr.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
+import org.cobaltians.cobalt.activities.CobaltActivity;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
+import org.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
 
 import android.app.Activity;
 import android.content.Context;

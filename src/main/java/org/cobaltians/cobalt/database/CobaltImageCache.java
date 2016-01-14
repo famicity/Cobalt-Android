@@ -27,9 +27,9 @@
  *
  */
 
-package fr.cobaltians.cobalt.database;
+package org.cobaltians.cobalt.database;
 
-import fr.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.Cobalt;
 
 import android.graphics.Bitmap;
 import android.util.Base64;

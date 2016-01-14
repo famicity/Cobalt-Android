@@ -27,16 +27,16 @@
  *
  */
 
-package fr.cobaltians.cobalt.activities;
+package org.cobaltians.cobalt.activities;
 
-import fr.cobaltians.cobalt.Cobalt;
-import fr.cobaltians.cobalt.R;
-import fr.cobaltians.cobalt.customviews.ActionViewMenuItem;
-import fr.cobaltians.cobalt.customviews.ActionViewMenuItemListener;
-import fr.cobaltians.cobalt.customviews.BottomBar;
-import fr.cobaltians.cobalt.font.CobaltFontManager;
-import fr.cobaltians.cobalt.fragments.CobaltFragment;
-import fr.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
+import org.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.R;
+import org.cobaltians.cobalt.customviews.ActionViewMenuItem;
+import org.cobaltians.cobalt.customviews.ActionViewMenuItemListener;
+import org.cobaltians.cobalt.customviews.BottomBar;
+import org.cobaltians.cobalt.font.CobaltFontManager;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
+import org.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
 import android.app.Activity;
 import android.content.Intent;

@@ -1,11 +1,11 @@
 /**
  *
- * BottomBar
+ * CobaltPluginWebContainer
  * Cobalt
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Cobaltians
+ * Copyright (c) 2014 Cobaltians
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,34 +27,39 @@
  *
  */
 
-package fr.cobaltians.cobalt.customviews;
+package org.cobaltians.cobalt.plugin;
 
-import android.content.Context;
-import android.support.v7.widget.ActionMenuView;
-import android.support.v7.widget.Toolbar;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
 
-public class BottomBar extends Toolbar {
+import android.app.Activity;
 
-    public BottomBar(Context context) {
-        super(context);
-    }
+public final class CobaltPluginWebContainer {
 
-    public BottomBar(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
+	/**************************************
+     * MEMBERS
+     **************************************/
+	
+	private final Activity mActivity;
+	private final CobaltFragment mFragment;
+	
+	/****************************************************************************
+     * CONSTRUCTORS
+     ****************************************************************************/
+	
+	public CobaltPluginWebContainer(Activity activity, CobaltFragment fragment) {
+		mActivity = activity;
+		mFragment = fragment;
+	}
 
-    public BottomBar(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
+	/************************************
+     * GETTERS
+     ************************************/
+	
+	public Activity getActivity() {
+		return mActivity;
+	}
 
-    @Override
-    public void addView(View child, ViewGroup.LayoutParams params) {
-        if (child instanceof ActionMenuView) {
-            params.width = LayoutParams.MATCH_PARENT;
-        }
-        super.addView(child, params);
-    }
+	public CobaltFragment getFragment() {
+		return mFragment;
+	}
 }

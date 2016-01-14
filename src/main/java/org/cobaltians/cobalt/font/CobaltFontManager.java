@@ -27,7 +27,7 @@
  *
  */
 
-package fr.cobaltians.cobalt.font;
+package org.cobaltians.cobalt.font;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -49,7 +49,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import fr.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.Cobalt;
 
 /**
  * Singleton allowing to

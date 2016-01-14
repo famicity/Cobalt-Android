@@ -27,9 +27,9 @@
  *
  */
 
-package fr.cobaltians.cobalt.customviews;
+package org.cobaltians.cobalt.customviews;
 
-import fr.cobaltians.cobalt.fragments.CobaltFragment;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
 
 import android.content.Context;
 import android.util.AttributeSet;

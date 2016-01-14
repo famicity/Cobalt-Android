@@ -27,9 +27,9 @@
  *
  */
 
-package fr.cobaltians.cobalt.database;
+package org.cobaltians.cobalt.database;
 
-import fr.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.Cobalt;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

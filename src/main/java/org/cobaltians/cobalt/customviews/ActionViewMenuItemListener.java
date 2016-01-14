@@ -1,4 +1,4 @@
-package fr.cobaltians.cobalt.customviews;
+package org.cobaltians.cobalt.customviews;
 
 /**
  * Created by sebastienfamel on 11/12/15.
