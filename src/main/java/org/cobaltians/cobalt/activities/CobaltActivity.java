@@ -378,38 +378,42 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             // Background color
             // TODO: apply on overflow popup
             String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor);
-            try {
-                int backgroundColorInt = Cobalt.parseColor(backgroundColor);
-                actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
-                bottomBar.setBackgroundColor(backgroundColorInt);
-            }
-            catch (IllegalArgumentException exception) {
-                if (Cobalt.DEBUG) {
-                    Log.w(Cobalt.TAG, TAG + " - setupBars: backgroundColor " + backgroundColor + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+            if (backgroundColor != null) {
+                try {
+                    int backgroundColorInt = Cobalt.parseColor(backgroundColor);
+                    actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
+                    bottomBar.setBackgroundColor(backgroundColorInt);
                 }
-                exception.printStackTrace();
+                catch (IllegalArgumentException exception) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + " - setupBars: backgroundColor " + backgroundColor + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                    }
+                    exception.printStackTrace();
+                }
             }
 
             // Color (default: system)
             int colorInt = 0;
             boolean applyColor = false;
             String color = configuration.optString(Cobalt.kBarsColor);
-            try {
-                colorInt = Cobalt.parseColor(color);
-                applyColor = true;
-                topBar.setTitleTextColor(colorInt);
+            if (color != null) {
+                try {
+                    colorInt = Cobalt.parseColor(color);
+                    applyColor = true;
+                    topBar.setTitleTextColor(colorInt);
 
-                Drawable overflowIconDrawable = topBar.getOverflowIcon();
-                overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                    Drawable overflowIconDrawable = topBar.getOverflowIcon();
+                    overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
 
-                Drawable navigationIconDrawable = topBar.getNavigationIcon();
-                navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
-            }
-            catch (IllegalArgumentException exception) {
-                if (Cobalt.DEBUG) {
-                    Log.w(Cobalt.TAG, TAG + " - setupBars: color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                    Drawable navigationIconDrawable = topBar.getNavigationIcon();
+                    navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
                 }
-                exception.printStackTrace();
+                catch (IllegalArgumentException exception) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + " - setupBars: color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                    }
+                    exception.printStackTrace();
+                }
             }
 
             // Logo
