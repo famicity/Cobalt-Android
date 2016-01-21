@@ -428,21 +428,20 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
             // Visible
             JSONObject visible = configuration.optJSONObject(Cobalt.kBarsVisible);
-            if (visible != null) {
-                boolean top = visible.optBoolean(Cobalt.kVisibleTop, true);
-                if (!top && actionBar.isShowing()) {
-                    actionBar.hide();
-                }
-                else if (top && !actionBar.isShowing()){
-                    actionBar.show();
-                }
-
-                boolean bottom = visible.optBoolean(Cobalt.kVisibleBottom);
-                if (bottom) {
-                    bottomBar.setVisibility(View.VISIBLE);
-                }
-                else bottomBar.setVisibility(View.GONE);
+            if (visible == null) visible = new JSONObject();
+            boolean top = visible.optBoolean(Cobalt.kVisibleTop, true);
+            if (!top && actionBar.isShowing()) {
+                actionBar.hide();
             }
+            else if (top && !actionBar.isShowing()){
+                actionBar.show();
+            }
+
+            boolean bottom = visible.optBoolean(Cobalt.kVisibleBottom);
+            if (bottom) {
+                bottomBar.setVisibility(View.VISIBLE);
+            }
+            else bottomBar.setVisibility(View.GONE);
 
             // Up
             JSONObject navigationIcon = configuration.optJSONObject(Cobalt.kBarsNavigationIcon);
