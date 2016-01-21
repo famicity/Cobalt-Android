@@ -377,7 +377,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         if (configuration != null) {
             // Background color
             // TODO: apply on overflow popup
-            String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor);
+            String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor, null);
             if (backgroundColor != null) {
                 try {
                     int backgroundColorInt = Cobalt.parseColor(backgroundColor);
@@ -395,7 +395,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             // Color (default: system)
             int colorInt = 0;
             boolean applyColor = false;
-            String color = configuration.optString(Cobalt.kBarsColor);
+            String color = configuration.optString(Cobalt.kBarsColor, null);
             if (color != null) {
                 try {
                     colorInt = Cobalt.parseColor(color);
