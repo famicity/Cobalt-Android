@@ -86,8 +86,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     private static boolean sWasPushedFromModal = false;
 
     // BARS
-    //private HashMap<Integer, String> mMenuItemsHashMap = new HashMap<>();
     protected HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
+    protected HashMap<Integer, String> mMenuItemsIdMap = new HashMap<>();
 
     /***********************************************************************************************
      *
@@ -286,36 +286,15 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
+
         if (itemId == android.R.id.home) {
             onBackPressed();
             return true;
         }
-        /*if (mMenuItemsHashMap.containsKey(itemId)) {
-            String name = mMenuItemsHashMap.get(item.getItemId());
-
-            Fragment fragment = getSupportFragmentManager().findFragmentById(getFragmentContainerId());
-            if (fragment != null
-                && CobaltFragment.class.isAssignableFrom(fragment.getClass())) {
-                try {
-                    JSONObject data = new JSONObject();
-                    data.put(Cobalt.kJSAction, Cobalt.JSActionActionPressed);
-                    data.put(Cobalt.kJSActionName, name);
-
-                    JSONObject message = new JSONObject();
-                    message.put(Cobalt.kJSType, Cobalt.JSTypeUI);
-                    message.put(Cobalt.kJSUIControl, Cobalt.JSControlBars);
-                    message.put(Cobalt.kJSData, data);
-
-                    ((CobaltFragment) fragment).sendMessage(message);
-                }
-                catch(JSONException exception) { exception.printStackTrace(); }
-            }
-            else if (Cobalt.DEBUG) Log.i(Cobalt.TAG,    TAG + " - onOptionsItemSelected: no fragment container found \n"
-                    + " or fragment found is not an instance of CobaltFragment. \n"
-                    + "Drop " + name + "bars button pressed event.");
-
+        if (mMenuItemsIdMap.containsKey(itemId)) {
+            onPressed(mMenuItemsIdMap.get(itemId));
             return true;
-        }*/
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -666,6 +645,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             menuItem.setVisible(visible);
             menuItem.setEnabled(enabled);
             mMenuItemsHashMap.put(name, actionView);
+            //need this next hashmap to send onPressed when item is on overflow
+            mMenuItemsIdMap.put(id, name);
         }
         catch (JSONException exception) {
             if (Cobalt.DEBUG) {
