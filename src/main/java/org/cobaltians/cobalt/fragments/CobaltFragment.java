@@ -823,7 +823,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		return false;
 	}
 
-    private void setBars(final JSONObject actionBar) {
+    protected void setBars(final JSONObject actionBar) {
         Intent intent = ((CobaltActivity) mContext).getIntent();
         Bundle bundle = intent.getExtras();
         if (bundle == null) {
