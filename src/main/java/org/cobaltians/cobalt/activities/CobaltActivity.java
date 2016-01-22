@@ -40,6 +40,7 @@ import org.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
@@ -54,6 +55,7 @@ import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -356,6 +358,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         if (configuration != null) {
             // Background color
             // TODO: apply on overflow popup
+            //TODO : see how get and set the default color value when barsBackgroundcolor and barsColor were null
             String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor, null);
             if (backgroundColor != null) {
                 try {
@@ -419,11 +422,17 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 topBar.setLogo(logoDrawable);
                 actionBar.setDisplayShowHomeEnabled(true);
             }
+            else {
+                actionBar.setDisplayShowHomeEnabled(false);
+            }
 
             // Title
             String title = configuration.optString(Cobalt.kBarsTitle);
             if (title.length() != 0) {
                 actionBar.setTitle(title);
+            }
+            else {
+                actionBar.setDisplayShowTitleEnabled(false);
             }
 
             // Visible
@@ -445,30 +454,29 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
             // Up
             JSONObject navigationIcon = configuration.optJSONObject(Cobalt.kBarsNavigationIcon);
-            if (navigationIcon != null) {
-                boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
-                actionBar.setDisplayHomeAsUpEnabled(enabled);
-                Drawable navigationIconDrawable;
+            if (navigationIcon == null) navigationIcon = new JSONObject();
+            boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
+            actionBar.setDisplayHomeAsUpEnabled(enabled);
+            Drawable navigationIconDrawable;
 
-                String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
-                if (!icon.equals("")) {
-                    int iconResId = getResourceIdentifier(icon);
-                    if (iconResId != 0) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            navigationIconDrawable = getResources().getDrawable(iconResId, null);
-                        }
-                        else {
-                            navigationIconDrawable = getResources().getDrawable(iconResId);
-                        }
-                        if (applyColor) {
-                            navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
-                        }
+            String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
+            if (!icon.equals("")) {
+                int iconResId = getResourceIdentifier(icon);
+                if (iconResId != 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        navigationIconDrawable = getResources().getDrawable(iconResId, null);
                     }
                     else {
-                        navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
+                        navigationIconDrawable = getResources().getDrawable(iconResId);
                     }
-                    topBar.setNavigationIcon(navigationIconDrawable);
+                    if (applyColor) {
+                        navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                    }
                 }
+                else {
+                    navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
+                }
+                topBar.setNavigationIcon(navigationIconDrawable);
             }
         }
     }
