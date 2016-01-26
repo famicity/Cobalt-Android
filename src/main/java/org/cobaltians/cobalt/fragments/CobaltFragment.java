@@ -697,7 +697,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     return false;
                 }
             case Cobalt.JSCallbackPullToRefreshDidRefresh:
-                mHandler.post(new Runnable() {
+                mWebView.post(new Runnable() {
 
                     @Override
                     public void run() {
@@ -706,7 +706,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 });
                 return true;
             case Cobalt.JSCallbackInfiniteScrollDidRefresh:
-                mHandler.post(new Runnable() {
+                mWebView.post(new Runnable() {
 
                     @Override
                     public void run() {
