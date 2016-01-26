@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -26,6 +28,8 @@ import org.cobaltians.cobalt.font.CobaltFontManager;
  * Created by sebastienfamel on 10/12/15.
  */
 public class ActionViewMenuItem extends RelativeLayout {
+
+    final static String TAG = ActionViewMenuItem.class.getSimpleName();
 
     protected String mName;
     protected JSONObject mAction;
@@ -136,12 +140,21 @@ public class ActionViewMenuItem extends RelativeLayout {
             }
             else {
                 mButton.setText(title);
-                if (color != null) mButton.setTextColor(Cobalt.parseColor(color));
+                if (color != null) {
+                    try {
+                        mButton.setTextColor(Cobalt.parseColor(color));
+                    } catch (IllegalArgumentException colorException) {
+                        if (Cobalt.DEBUG) {
+                            Log.w(Cobalt.TAG, TAG + " - init setTextColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                        }
+                        colorException.printStackTrace();
+                    }
+                }
                 mButton.setEnabled(enabled);
                 mButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ((CobaltActivity)mContext).onPressed(mName);
+                        ((CobaltActivity) mContext).onPressed(mName);
                     }
                 });
                 // TODO: apply color for items in overflow popup
