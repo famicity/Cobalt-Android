@@ -63,6 +63,7 @@ import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IllegalFormatException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -271,6 +272,9 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             try {
                 JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
                 String color = actionBar.optString(Cobalt.kBarsColor);
+                if (color.equals("")) {
+                    color = getThemeDefaultColorBackground();
+                }
                 JSONArray actions = actionBar.optJSONArray(Cobalt.kBarsActions);
                 if (actions != null) setupOptionsMenu(menu, color, actions);
             }
@@ -335,6 +339,38 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         return R.id.bottom_bar;
     }
 
+    public String getThemeDefaultColorBackground() {
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
+        try {
+            String color = String.format("%06x", (0xFFFFFF & typedValue.data));
+            return color;
+        }
+        catch (NullPointerException exc) {
+            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - getThemeDefaultColorBackground : no attribute colorPrimary found");
+        }
+        catch (IllegalFormatException exc) {
+            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - getThemeDefaultColorBackground : illegal format for colorPrimary found");
+        }
+        return "";
+    }
+
+    public String getThemeDefaultTextColor() {
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
+        try {
+            String color = String.format("%06x", (0xFFFFFF & typedValue.data));
+            return color;
+        }
+        catch (NullPointerException exc) {
+            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - getThemeDefaultTextColor : no attribute textColorPrimary found");
+        }
+        catch (IllegalFormatException exc) {
+            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - getThemeDefaultTextColor : illegal format for textColorPrimary found");
+        }
+        return "";
+    }
+
     public void setupBars(JSONObject configuration) {
         Toolbar topBar = (Toolbar) findViewById(getTopBarId());
         // TODO: use LinearLayout for bottomBar instead to handle groups
@@ -360,43 +396,42 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             // TODO: apply on overflow popup
             //TODO : see how get and set the default color value when barsBackgroundcolor and barsColor were null
             String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor, null);
-            if (backgroundColor != null) {
-                try {
-                    int backgroundColorInt = Cobalt.parseColor(backgroundColor);
-                    actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
-                    bottomBar.setBackgroundColor(backgroundColorInt);
+            if (backgroundColor == null) backgroundColor = getThemeDefaultColorBackground();
+            try {
+                int backgroundColorInt = Cobalt.parseColor(backgroundColor);
+                actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
+                bottomBar.setBackgroundColor(backgroundColorInt);
+            }
+            catch (IllegalArgumentException exception) {
+                if (Cobalt.DEBUG) {
+                    Log.w(Cobalt.TAG, TAG + " - setupBars: backgroundColor " + backgroundColor + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
                 }
-                catch (IllegalArgumentException exception) {
-                    if (Cobalt.DEBUG) {
-                        Log.w(Cobalt.TAG, TAG + " - setupBars: backgroundColor " + backgroundColor + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                    }
-                    exception.printStackTrace();
-                }
+                exception.printStackTrace();
             }
 
             // Color (default: system)
             int colorInt = 0;
             boolean applyColor = false;
             String color = configuration.optString(Cobalt.kBarsColor, null);
-            if (color != null) {
-                try {
-                    colorInt = Cobalt.parseColor(color);
-                    applyColor = true;
-                    topBar.setTitleTextColor(colorInt);
+            if (color == null) color = getThemeDefaultTextColor();
+            try {
+                colorInt = Cobalt.parseColor(color);
+                applyColor = true;
+                topBar.setTitleTextColor(colorInt);
 
-                    Drawable overflowIconDrawable = topBar.getOverflowIcon();
-                    overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                Drawable overflowIconDrawable = topBar.getOverflowIcon();
+                overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
 
-                    Drawable navigationIconDrawable = topBar.getNavigationIcon();
-                    navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
-                }
-                catch (IllegalArgumentException exception) {
-                    if (Cobalt.DEBUG) {
-                        Log.w(Cobalt.TAG, TAG + " - setupBars: color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                    }
-                    exception.printStackTrace();
-                }
+                Drawable navigationIconDrawable = topBar.getNavigationIcon();
+                navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
             }
+            catch (IllegalArgumentException exception) {
+                if (Cobalt.DEBUG) {
+                    Log.w(Cobalt.TAG, TAG + " - setupBars: color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                }
+                exception.printStackTrace();
+            }
+
 
             // Logo
             String logo = configuration.optString(Cobalt.kBarsIcon);
