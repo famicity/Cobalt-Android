@@ -793,6 +793,23 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             JSONObject content = data.optJSONObject(Cobalt.kContent);
                             ((CobaltActivity)getActivity()).setContentMenuItem(nameContent, content);
                             return true;
+                        case Cobalt.JSActionSetBarsVisible:
+                            Log.d(TAG, "catch event setBarsVisible with data = "+data.toString());
+                            JSONObject visible = data.optJSONObject(Cobalt.kVisible);
+                            ((CobaltActivity)getActivity()).setActionBarVisible(visible);
+                            return true;
+                        case Cobalt.JSActionSetBarContent:
+                            Log.d(TAG, "catch event setBarsContent with data = "+data.toString());
+                            //TODO something
+                            return true;
+                        case Cobalt.JSActionSetActionVisible:
+                            Log.d(TAG, "catch event setActionVisible with data = "+data.toString());
+                            //TODO something
+                            return true;
+                        case Cobalt.JSActionSetActionEnabled:
+                            Log.d(TAG, "catch event setActionEnabled with data = "+data.toString());
+                            //TODO something
+                            return true;
                         default:
                             break;
                     }

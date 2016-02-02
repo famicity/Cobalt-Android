@@ -182,7 +182,12 @@ public class Cobalt {
     public final static String JSActionSetBars = "setBars";
     public final static String JSActionSetActionBadge = "setActionBadge";
     public final static String JSActionSetActionContent = "setActionContent";
+    public final static String JSActionSetBarsVisible = "setBarsVisible";
+    public final static String JSActionSetBarContent = "setBarContent";
+    public final static String JSActionSetActionVisible = "setActionVisible";
+    public final static String JSActionSetActionEnabled = "setActionEnabled";
     public final static String kContent = "content";
+    public final static String kVisible = "visible";
 
     // DATE PICKER
     public static final String JSControlPicker = "picker";

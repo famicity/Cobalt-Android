@@ -472,21 +472,22 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
             // Visible
             JSONObject visible = configuration.optJSONObject(Cobalt.kBarsVisible);
-            if (visible == null) visible = new JSONObject();
-            boolean top = visible.optBoolean(Cobalt.kVisibleTop, true);
-            if (!top && actionBar.isShowing()) {
-                actionBar.hide();
-            }
-            else if (top && !actionBar.isShowing()){
-                actionBar.show();
-            }
+            setActionBarVisible(visible);
+            /*if (visible != null) {
+                boolean top = visible.optBoolean(Cobalt.kVisibleTop, true);
+                if (!top && actionBar.isShowing()) {
+                    actionBar.hide();
+                }
+                else if (top && !actionBar.isShowing()){
+                    actionBar.show();
+                }
 
-            boolean bottom = visible.optBoolean(Cobalt.kVisibleBottom);
-            if (bottom) {
-                bottomBar.setVisibility(View.VISIBLE);
-            }
-            else bottomBar.setVisibility(View.GONE);
-
+                boolean bottom = visible.optBoolean(Cobalt.kVisibleBottom);
+                if (bottom) {
+                    bottomBar.setVisibility(View.VISIBLE);
+                }
+                else bottomBar.setVisibility(View.GONE);
+            }*/
             // Up
             JSONObject navigationIcon = configuration.optJSONObject(Cobalt.kBarsNavigationIcon);
             if (navigationIcon == null) navigationIcon = new JSONObject();
@@ -631,6 +632,36 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 @Override
                 public void run() {
                     item.setActionContent(content);
+                }
+            });
+        }
+    }
+
+    public void setActionBarVisible(final JSONObject visible) {
+        if (visible != null) {
+            final ActionBar actionBar = getSupportActionBar();
+            final BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (visible.has(Cobalt.kVisibleTop)) {
+                        boolean top = visible.optBoolean(Cobalt.kVisibleTop);
+
+                        if (!top && actionBar.isShowing()) {
+                            actionBar.hide();
+                        }
+                        else if (top && !actionBar.isShowing()){
+                            actionBar.show();
+                        }
+                    }
+
+                    if (visible.has(Cobalt.kVisibleBottom)) {
+                        boolean bottom = visible.optBoolean(Cobalt.kVisibleBottom);
+                        if (bottom) {
+                            bottomBar.setVisibility(View.VISIBLE);
+                        }
+                        else bottomBar.setVisibility(View.GONE);
+                    }
                 }
             });
         }
