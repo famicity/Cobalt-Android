@@ -215,7 +215,9 @@ public class ActionViewMenuItem extends RelativeLayout {
     }
 
     public void setActionContent(JSONObject content) {
-        String androidIcon = content.optString(Cobalt.kActionAndroidIcon, null);
+		mAction = content;
+		
+        String androidIcon = mAction.optString(Cobalt.kActionAndroidIcon, null);
         String title = mAction.optString(Cobalt.kActionTitle, null);
         String icon = mAction.optString(Cobalt.kActionIcon, null);
         String color = mAction.optString(Cobalt.kActionColor, null);
