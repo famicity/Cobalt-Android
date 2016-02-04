@@ -42,6 +42,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -273,7 +274,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
                 String color = actionBar.optString(Cobalt.kBarsColor);
                 if (color.equals("")) {
-                    color = getThemeDefaultColorBackground();
+                    color = getDefaultActionBarBackgroundColor();
                 }
                 JSONArray actions = actionBar.optJSONArray(Cobalt.kBarsActions);
                 if (actions != null) setupOptionsMenu(menu, color, actions);
@@ -339,20 +340,17 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         return R.id.bottom_bar;
     }
 
-    public String getThemeDefaultColorBackground() {
-        TypedValue typedValue = new TypedValue();
-        getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
-        try {
-            String color = String.format("%06x", (0xFFFFFF & typedValue.data));
-            return color;
-        }
-        catch (NullPointerException exc) {
-            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - getThemeDefaultColorBackground : no attribute colorPrimary found");
-        }
-        catch (IllegalFormatException exc) {
-            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - getThemeDefaultColorBackground : illegal format for colorPrimary found");
-        }
-        return "";
+    public String getDefaultActionBarBackgroundColor() {
+        Resources.Theme theme = getTheme();
+        TypedValue actionBarStyle = new TypedValue();
+        theme.resolveAttribute(android.R.attr.actionBarStyle, actionBarStyle, true);
+        int[] backgroundAttrName = { android.R.attr.background };
+        TypedArray actionBarStyleAttrs = theme.obtainStyledAttributes(actionBarStyle.resourceId, backgroundAttrName);
+        int backgroundColor = actionBarStyleAttrs.getColor(0, Color.BLACK);
+        actionBarStyleAttrs.recycle();
+
+        String hexColor = String.format("%08x", backgroundColor);
+        return hexColor.substring(2, 8) + hexColor.substring(0, 2);
     }
 
     public String getThemeDefaultTextColor() {
@@ -396,7 +394,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             // TODO: apply on overflow popup
             //TODO : see how get and set the default color value when barsBackgroundcolor and barsColor were null
             String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor, null);
-            if (backgroundColor == null) backgroundColor = getThemeDefaultColorBackground();
+            if (backgroundColor == null) backgroundColor = getDefaultActionBarBackgroundColor();
             try {
                 int backgroundColorInt = Cobalt.parseColor(backgroundColor);
                 actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
