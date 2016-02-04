@@ -353,20 +353,21 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         return hexColor.substring(2, 8) + hexColor.substring(0, 2);
     }
 
-    public String getThemeDefaultTextColor() {
-        TypedValue typedValue = new TypedValue();
-        getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
-        try {
-            String color = String.format("%06x", (0xFFFFFF & typedValue.data));
-            return color;
+    public String getDefaultActionBarTextColor() {
+        TypedValue actionMenuTextColor = new TypedValue();
+        getTheme().resolveAttribute(android.R.attr.actionMenuTextColor, actionMenuTextColor, true);
+
+        String hexColor;
+        switch(actionMenuTextColor.type) {
+            case TypedValue.TYPE_INT_COLOR_RGB8:
+            case TypedValue.TYPE_INT_COLOR_ARGB8:
+                hexColor = String.format("%08x", actionMenuTextColor.data);
+                return hexColor.substring(2, 8) + hexColor.substring(0, 2);
+            // TODO
+            case TypedValue.TYPE_STRING:
+            default:
+                return "000";
         }
-        catch (NullPointerException exc) {
-            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - getThemeDefaultTextColor : no attribute textColorPrimary found");
-        }
-        catch (IllegalFormatException exc) {
-            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - getThemeDefaultTextColor : illegal format for textColorPrimary found");
-        }
-        return "";
     }
 
     public void setupBars(JSONObject configuration) {
@@ -411,7 +412,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             int colorInt = 0;
             boolean applyColor = false;
             String color = configuration.optString(Cobalt.kBarsColor, null);
-            if (color == null) color = getThemeDefaultTextColor();
+            if (color == null) color = getDefaultActionBarTextColor();
             try {
                 colorInt = Cobalt.parseColor(color);
                 applyColor = true;
