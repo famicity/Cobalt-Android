@@ -232,6 +232,7 @@ public class Cobalt {
 
     private static Cobalt sInstance;
     private static Context mContext;
+    private static JSONObject sCobaltConfiguration;
 
     private String mResourcePath = "www/";
 
@@ -459,17 +460,18 @@ public class Cobalt {
      **********************************************************************************************/
 
     private JSONObject getConfiguration() {
-        String configuration = readFileFromAssets(mResourcePath + CONF_FILE);
-
-        try {
-            return new JSONObject(configuration);
+        if (sCobaltConfiguration == null) {
+            String configuration = readFileFromAssets(mResourcePath + CONF_FILE);
+            try {
+                sCobaltConfiguration = new JSONObject(configuration);
+            }
+            catch (JSONException exception) {
+                if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - getConfiguration: check cobalt.conf. File is missing or not at " + ASSETS_PATH + mResourcePath + CONF_FILE);
+                exception.printStackTrace();
+                return new JSONObject();
+            }
         }
-        catch (JSONException exception) {
-            if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - getConfiguration: check cobalt.conf. File is missing or not at " + ASSETS_PATH + mResourcePath + CONF_FILE);
-            exception.printStackTrace();
-        }
-
-        return new JSONObject();
+        return sCobaltConfiguration;
     }
 
     private String readFileFromAssets(String file) {

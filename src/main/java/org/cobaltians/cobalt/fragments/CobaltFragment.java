@@ -29,10 +29,6 @@
 
 package org.cobaltians.cobalt.fragments;
 
-import android.content.ComponentName;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import org.cobaltians.cobalt.Cobalt;
 import org.cobaltians.cobalt.R;
 import org.cobaltians.cobalt.activities.CobaltActivity;
