@@ -240,4 +240,17 @@ public class ActionViewMenuItem extends RelativeLayout {
             }
         }
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (enabled) {
+            if (!mImageButton.isEnabled()) {
+                mImageButton.setEnabled(true);
+            }
+        }
+        else if (mImageButton.isEnabled()) {
+            mImageButton.setEnabled(false);
+        }
+    }
 }

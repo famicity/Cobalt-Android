@@ -784,30 +784,62 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             setBars(bars);
                             return true;
                         case Cobalt.JSActionSetActionBadge:
-                            String name = data.optString(Cobalt.kActionName, null);
-                            String badge = data.optString(Cobalt.kActionBadge, null);
-                            ((CobaltActivity)getActivity()).setBadgeMenuItem(name, badge);
+                            final String name = data.optString(Cobalt.kActionName, null);
+                            final String badge = data.optString(Cobalt.kActionBadge, null);
+                            (getActivity()).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((CobaltActivity) getActivity()).setBadgeMenuItem(name, badge);
+                                }
+                            });
                             return true;
                         case Cobalt.JSActionSetActionContent:
-                            String nameContent = data.optString(Cobalt.kActionName, null);
-                            JSONObject content = data.optJSONObject(Cobalt.kContent);
-                            ((CobaltActivity)getActivity()).setContentMenuItem(nameContent, content);
+                            final String nameContent = data.optString(Cobalt.kActionName, null);
+                            final JSONObject content = data.optJSONObject(Cobalt.kContent);
+                            (getActivity()).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((CobaltActivity)getActivity()).setContentMenuItem(nameContent, content);
+                                }
+                            });
                             return true;
                         case Cobalt.JSActionSetBarsVisible:
-                            JSONObject visible = data.optJSONObject(Cobalt.kVisible);
-                            ((CobaltActivity)getActivity()).setActionBarVisible(visible);
+                            final JSONObject visible = data.optJSONObject(Cobalt.kVisible);
+                            (getActivity()).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((CobaltActivity) getActivity()).setActionBarVisible(visible);
+                                }
+                            });
                             return true;
                         case Cobalt.JSActionSetBarContent:
-                            JSONObject barsContent = data.optJSONObject(Cobalt.kContent);
-                            ((CobaltActivity)getActivity()).setBarContent(barsContent);
+                            final JSONObject barsContent = data.optJSONObject(Cobalt.kContent);
+                            (getActivity()).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((CobaltActivity) getActivity()).setBarContent(barsContent);
+                                }
+                            });
                             return true;
                         case Cobalt.JSActionSetActionVisible:
-                            Log.d(TAG, "catch event setActionVisible with data = "+data.toString());
-                            //TODO something
+                            final String actionName = data.optString(Cobalt.kActionName, null);
+                            final boolean actionVisible = data.optBoolean(Cobalt.kVisible);
+                            (getActivity()).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((CobaltActivity) getActivity()).setActionItemVisible(actionName, actionVisible);
+                                }
+                            });
                             return true;
                         case Cobalt.JSActionSetActionEnabled:
-                            Log.d(TAG, "catch event setActionEnabled with data = "+data.toString());
-                            //TODO something
+                            final String actionNameEnabled = data.optString(Cobalt.kActionName, null);
+                            final boolean actionEnabled = data.optBoolean(Cobalt.kEnabled);
+                            (getActivity()).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((CobaltActivity) getActivity()).setActionItemEnabled(actionNameEnabled, actionEnabled);
+                                }
+                            });
                             return true;
                         default:
                             break;
