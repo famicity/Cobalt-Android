@@ -108,7 +108,20 @@ public class ActionViewMenuItem extends RelativeLayout {
                     else mImageButton.setImageDrawable(mContext.getResources().getDrawable(idResource));
                 }
                 else {
-                    mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, Cobalt.parseColor(mColor)));
+                    int iconColor = 0;
+
+                    try {
+                        iconColor = Cobalt.parseColor(color);
+                    }
+                    catch (IllegalArgumentException exception) {
+                        if (Cobalt.DEBUG) {
+                            Log.w(Cobalt.TAG, TAG + " - init setImageDrawable : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                        }
+
+                        exception.printStackTrace();
+                    }
+
+                    mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, iconColor));
                 }
 
                 mImageButton.setEnabled(enabled);
@@ -141,14 +154,19 @@ public class ActionViewMenuItem extends RelativeLayout {
             else {
                 mButton.setText(title);
                 if (color != null) {
+                    int textColor = 0;
                     try {
-                        mButton.setTextColor(Cobalt.parseColor(color));
-                    } catch (IllegalArgumentException colorException) {
+                        textColor = Cobalt.parseColor(color);
+                    }
+                    catch (IllegalArgumentException exception) {
                         if (Cobalt.DEBUG) {
                             Log.w(Cobalt.TAG, TAG + " - init setTextColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
                         }
-                        colorException.printStackTrace();
+
+                        exception.printStackTrace();
                     }
+
+                    mButton.setTextColor(textColor);
                 }
                 mButton.setEnabled(enabled);
                 mButton.setOnClickListener(new OnClickListener() {
@@ -220,10 +238,24 @@ public class ActionViewMenuItem extends RelativeLayout {
         String androidIcon = mAction.optString(Cobalt.kActionAndroidIcon, null);
         String title = mAction.optString(Cobalt.kActionTitle, null);
         String icon = mAction.optString(Cobalt.kActionIcon, null);
-        String color = mAction.optString(Cobalt.kActionColor, null);
+        String color = mAction.optString(Cobalt.kActionColor, mColor);
 
         if (title != null) mButton.setText(title);
-        if (color != null) mButton.setTextColor(Cobalt.parseColor(color));
+        if (color != null) {
+            int textColor = 0;
+            try {
+                textColor = Cobalt.parseColor(color);
+            }
+            catch (IllegalArgumentException exception) {
+                if (Cobalt.DEBUG) {
+                    Log.w(Cobalt.TAG, TAG + " - init setTextColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                }
+
+                exception.printStackTrace();
+            }
+
+            mButton.setTextColor(textColor);
+        }
 
         if (androidIcon != null || icon != null) {
             int idResource;
@@ -236,21 +268,20 @@ public class ActionViewMenuItem extends RelativeLayout {
                 else mImageButton.setImageDrawable(mContext.getResources().getDrawable(idResource));
             }
             else {
-                mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, Cobalt.parseColor(mColor)));
-            }
-        }
-    }
+                int iconColor = 0;
+                try {
+                    iconColor = Cobalt.parseColor(color);
+                }
+                catch (IllegalArgumentException exception) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + " - init setIconColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                    }
 
-    @Override
-    public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
-        if (enabled) {
-            if (!mImageButton.isEnabled()) {
-                mImageButton.setEnabled(true);
+                    exception.printStackTrace();
+                }
+
+                mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, iconColor));
             }
-        }
-        else if (mImageButton.isEnabled()) {
-            mImageButton.setEnabled(false);
         }
     }
 }
