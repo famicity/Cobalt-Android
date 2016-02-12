@@ -92,6 +92,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     // BARS
     protected HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
     protected HashMap<Integer, String> mMenuItemsIdMap = new HashMap<>();
+    protected HashMap<String, MenuItem> mMenuItemByNameMap = new HashMap<>();
 
     /***********************************************************************************************
      *
@@ -171,8 +172,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 getSupportFragmentManager().beginTransaction().replace(getFragmentContainerId(), fragment).commit();
             }
             else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: fragment container not found");
-        }
-        else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: getFragment() returned null");
+        } else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: getFragment() returned null");
     }
 
 
@@ -602,195 +602,189 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
     }
 
-    public void setBadgeMenuItem(String name, final String badgeText){
+    public void setBadgeMenuItem(String name, String badgeText){
         if (mMenuItemsHashMap.containsKey(name)) {
-            final ActionViewMenuItem item = mMenuItemsHashMap.get(name);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    item.setActionBadge(badgeText);
-                }
-            });
+            ActionViewMenuItem item = mMenuItemsHashMap.get(name);
+            item.setActionBadge(badgeText);
         }
     }
 
-    public void setContentMenuItem(String name, final JSONObject content){
+    public void setContentMenuItem(String name, JSONObject content){
         if (mMenuItemsHashMap.containsKey(name)) {
-            final ActionViewMenuItem item = mMenuItemsHashMap.get(name);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    item.setActionContent(content);
-                }
-            });
+            ActionViewMenuItem item = mMenuItemsHashMap.get(name);
+            item.setActionContent(content);
         }
     }
 
-    public void setActionBarVisible(final JSONObject visible) {
+    public void setActionBarVisible(JSONObject visible) {
         if (visible != null) {
-            final ActionBar actionBar = getSupportActionBar();
-            final BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (visible.has(Cobalt.kVisibleTop)) {
-                        boolean top = visible.optBoolean(Cobalt.kVisibleTop);
+            ActionBar actionBar = getSupportActionBar();
+            BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
+            if (visible.has(Cobalt.kVisibleTop)) {
+                boolean top = visible.optBoolean(Cobalt.kVisibleTop);
 
-                        if (!top && actionBar.isShowing()) {
-                            actionBar.hide();
-                        }
-                        else if (top && !actionBar.isShowing()){
-                            actionBar.show();
-                        }
-                    }
-
-                    if (visible.has(Cobalt.kVisibleBottom)) {
-                        boolean bottom = visible.optBoolean(Cobalt.kVisibleBottom);
-                        if (bottom) {
-                            bottomBar.setVisibility(View.VISIBLE);
-                        }
-                        else bottomBar.setVisibility(View.GONE);
-                    }
+                if (!top && actionBar.isShowing()) {
+                    actionBar.hide();
                 }
-            });
+                else if (top && !actionBar.isShowing()){
+                    actionBar.show();
+                }
+            }
+
+            if (visible.has(Cobalt.kVisibleBottom)) {
+                boolean bottom = visible.optBoolean(Cobalt.kVisibleBottom);
+                if (bottom) {
+                    bottomBar.setVisibility(View.VISIBLE);
+                }
+                else bottomBar.setVisibility(View.GONE);
+            }
         }
     }
 
-    public void setBarContent(final JSONObject content) {
+    public void setBarContent(JSONObject content) {
         if (content != null) {
-            final Toolbar topBar = (Toolbar) findViewById(getTopBarId());
-            final ActionBar actionBar = getSupportActionBar();
-            final BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
-            final int[] colorInt = new int[1];
-            final boolean[] applyColor = new boolean[1];
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (content.has(Cobalt.kBarsBackgroundColor)) {
-                        try {
-                            String backgroundColor = content.getString(Cobalt.kBarsBackgroundColor);
-                            int backgroundColorInt = Cobalt.parseColor(backgroundColor);
-                            actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
-                            bottomBar.setBackgroundColor(backgroundColorInt);
-                        }
-                        catch (IllegalArgumentException exception) {
-                            if (Cobalt.DEBUG) {
-                                Log.w(Cobalt.TAG, TAG + " - setBarContent: backgroundColor format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                            }
-                            exception.printStackTrace();
-                        }
-                        catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+            Toolbar topBar = (Toolbar) findViewById(getTopBarId());
+            ActionBar actionBar = getSupportActionBar();
+            BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
+            int[] colorInt = new int[1];
+            boolean[] applyColor = new boolean[1];
+
+            if (content.has(Cobalt.kBarsBackgroundColor)) {
+                try {
+                    String backgroundColor = content.getString(Cobalt.kBarsBackgroundColor);
+                    int backgroundColorInt = Cobalt.parseColor(backgroundColor);
+                    actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
+                    bottomBar.setBackgroundColor(backgroundColorInt);
+                } catch (IllegalArgumentException exception) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + " - setBarContent: backgroundColor format not supported, use (#)RGB or (#)RRGGBB(AA).");
                     }
-
-                    if (content.has(Cobalt.kBarsColor)) {
-                        try {
-                            String color = content.getString(Cobalt.kBarsColor);
-                            colorInt[0] = Cobalt.parseColor(color);
-                            applyColor[0] = true;
-                            topBar.setTitleTextColor(colorInt[0]);
-
-                            Drawable overflowIconDrawable = topBar.getOverflowIcon();
-                            overflowIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
-
-                            Drawable navigationIconDrawable = topBar.getNavigationIcon();
-                            navigationIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
-                        }
-                        catch (IllegalArgumentException exception) {
-                            if (Cobalt.DEBUG) {
-                                Log.w(Cobalt.TAG, TAG + " - setupBars: color format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                            }
-                            exception.printStackTrace();
-                        }
-                        catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if(content.has(Cobalt.kBarsIcon)) {
-                        try {
-                            String logo = content.getString(Cobalt.kBarsIcon);
-                            if (!logo.equals("")) {
-                                Drawable logoDrawable;
-
-                                int logoResId = getResourceIdentifier(logo);
-                                if (logoResId != 0) {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                        logoDrawable = getResources().getDrawable(logoResId, null);
-                                    }
-                                    else {
-                                        logoDrawable = getResources().getDrawable(logoResId);
-                                    }
-
-                                    if (applyColor[0]) {
-                                        logoDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
-                                    }
-                                }
-                                else {
-                                    logoDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), logo, colorInt[0]);
-                                }
-                                topBar.setLogo(logoDrawable);
-                                actionBar.setDisplayShowHomeEnabled(true);
-                            }
-                            else {
-                                actionBar.setDisplayShowHomeEnabled(false);
-                            }
-                        }
-                        catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if (content.has(Cobalt.kBarsNavigationIcon)) {
-                        try {
-                            JSONObject navigationIcon = content.getJSONObject(Cobalt.kBarsNavigationIcon);
-                            if (navigationIcon == null) navigationIcon = new JSONObject();
-                            boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
-                            actionBar.setDisplayHomeAsUpEnabled(enabled);
-                            Drawable navigationIconDrawable;
-
-                            String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
-                            if (!icon.equals("")) {
-                                int iconResId = getResourceIdentifier(icon);
-                                if (iconResId != 0) {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                        navigationIconDrawable = getResources().getDrawable(iconResId, null);
-                                    }
-                                    else {
-                                        navigationIconDrawable = getResources().getDrawable(iconResId);
-                                    }
-                                    if (applyColor[0]) {
-                                        navigationIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
-                                    }
-                                }
-                                else {
-                                    navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), icon, colorInt[0]);
-                                }
-                                topBar.setNavigationIcon(navigationIconDrawable);
-                            }
-                        }
-                        catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if (content.has(Cobalt.kBarsTitle)) {
-                        try {
-                            String title = content.getString(Cobalt.kBarsTitle);
-                            if (title.length() != 0) {
-                                actionBar.setTitle(title);
-                            }
-                            else {
-                                actionBar.setDisplayShowTitleEnabled(false);
-                            }
-                        }
-                        catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    exception.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            });
+            }
+
+            if (content.has(Cobalt.kBarsColor)) {
+                try {
+                    String color = content.getString(Cobalt.kBarsColor);
+                    colorInt[0] = Cobalt.parseColor(color);
+                    applyColor[0] = true;
+                    topBar.setTitleTextColor(colorInt[0]);
+
+                    Drawable overflowIconDrawable = topBar.getOverflowIcon();
+                    overflowIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
+
+                    Drawable navigationIconDrawable = topBar.getNavigationIcon();
+                    navigationIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
+                } catch (IllegalArgumentException exception) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + " - setupBars: color format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                    }
+                    exception.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (content.has(Cobalt.kBarsIcon)) {
+                try {
+                    String logo = content.getString(Cobalt.kBarsIcon);
+                    if (!logo.equals("")) {
+                        Drawable logoDrawable;
+
+                        int logoResId = getResourceIdentifier(logo);
+                        if (logoResId != 0) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                logoDrawable = getResources().getDrawable(logoResId, null);
+                            } else {
+                                logoDrawable = getResources().getDrawable(logoResId);
+                            }
+
+                            if (applyColor[0]) {
+                                logoDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
+                            }
+                        } else {
+                            logoDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), logo, colorInt[0]);
+                        }
+                        topBar.setLogo(logoDrawable);
+                        actionBar.setDisplayShowHomeEnabled(true);
+                    } else {
+                        actionBar.setDisplayShowHomeEnabled(false);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (content.has(Cobalt.kBarsNavigationIcon)) {
+                try {
+                    JSONObject navigationIcon = content.getJSONObject(Cobalt.kBarsNavigationIcon);
+                    if (navigationIcon == null) navigationIcon = new JSONObject();
+                    boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
+                    actionBar.setDisplayHomeAsUpEnabled(enabled);
+                    Drawable navigationIconDrawable;
+
+                    String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
+                    if (!icon.equals("")) {
+                        int iconResId = getResourceIdentifier(icon);
+                        if (iconResId != 0) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                navigationIconDrawable = getResources().getDrawable(iconResId, null);
+                            } else {
+                                navigationIconDrawable = getResources().getDrawable(iconResId);
+                            }
+                            if (applyColor[0]) {
+                                navigationIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
+                            }
+                        } else {
+                            navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), icon, colorInt[0]);
+                        }
+                        topBar.setNavigationIcon(navigationIconDrawable);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (content.has(Cobalt.kBarsTitle)) {
+                try {
+                    String title = content.getString(Cobalt.kBarsTitle);
+                    if (title.length() != 0) {
+                        actionBar.setTitle(title);
+                    } else {
+                        actionBar.setDisplayShowTitleEnabled(false);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void setActionItemVisible(String actionName, boolean visible) {
+        MenuItem menuItem = mMenuItemByNameMap.get(actionName);
+        if (visible) {
+            if (!menuItem.isVisible()) {
+                menuItem.setVisible(true);
+            }
+        } else if (menuItem.isVisible()) {
+            menuItem.setVisible(false);
+        }
+    }
+
+    public void setActionItemEnabled(String actionName, boolean enabled) {
+        MenuItem menuItem = mMenuItemByNameMap.get(actionName);
+        if (enabled) {
+            if (!menuItem.isEnabled()) {
+                menuItem.setEnabled(true);
+            }
+        } else if (menuItem.isEnabled()) {
+            menuItem.setEnabled(false);
+        }
+        if (mMenuItemsHashMap.containsKey(actionName)) {
+            ActionViewMenuItem actionViewMenuItem = mMenuItemsHashMap.get(actionName);
+            actionViewMenuItem.setEnabled(enabled);
         }
     }
 
