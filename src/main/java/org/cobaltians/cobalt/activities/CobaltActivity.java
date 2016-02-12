@@ -816,6 +816,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             mMenuItemsHashMap.put(name, actionView);
             //need this next hashmap to send onPressed when item is on overflow
             mMenuItemsIdMap.put(id, name);
+            //need this next hashmap to set menuItem
+            mMenuItemByNameMap.put(name, menuItem);
         }
         catch (JSONException exception) {
             if (Cobalt.DEBUG) {
