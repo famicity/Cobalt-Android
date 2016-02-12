@@ -372,22 +372,27 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	private void executeScriptInWebView(final JSONObject jsonObj) {
         if (jsonObj != null) {
 			if (mCobaltIsReady) {
-                mWebView.post(new Runnable() {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mWebView.post(new Runnable() {
 
-					@Override
-					public void run() {
-						// Line & paragraph separators are not JSON compliant but supported by JSONObject
-						String script = jsonObj.toString().replaceAll("[\u2028\u2029]", "");
+                            @Override
+                            public void run() {
+                                // Line & paragraph separators are not JSON compliant but supported by JSONObject
+                                String script = jsonObj.toString().replaceAll("[\u2028\u2029]", "");
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                            // Since KitKat, messages are automatically urldecoded when received from the web. encoding them to fix this.
-                            script = script.replaceAll("%","%25");
-                        }
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                    // Since KitKat, messages are automatically urldecoded when received from the web. encoding them to fix this.
+                                    script = script.replaceAll("%", "%25");
+                                }
 
-                        String url = "javascript:cobalt.execute(" + script + ");";
-                        mWebView.loadUrl(url);
-					}
-				});
+                                String url = "javascript:cobalt.execute(" + script + ");";
+                                mWebView.loadUrl(url);
+                            }
+                        });
+                    }
+                });
 			}
 			else {
 				if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeScriptInWebView: adding message to queue: " + jsonObj);
