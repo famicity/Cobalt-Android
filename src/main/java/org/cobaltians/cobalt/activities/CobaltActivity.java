@@ -390,7 +390,12 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
         // Default
         actionBar.setTitle(null);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        if (sActivitiesArrayList.size() == 1) {
+            actionBar.setDisplayHomeAsUpEnabled(false);
+        }
+        else {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         if (configuration != null) {
             // Background color
