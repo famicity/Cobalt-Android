@@ -910,7 +910,12 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 	}
 
 	private void backWithSuper() {
-		super.onBackPressed();
+
+        try {
+            super.onBackPressed();
+        }catch (IllegalStateException exc) {
+            if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " onBackPressed: catch illegalStateException for fix crash on API > 11");
+        }
 	}
 
     /***********************************************************************************************
