@@ -40,9 +40,6 @@ import org.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -52,19 +49,15 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatButton;
-import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IllegalFormatException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -118,7 +111,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             extras.putString(Cobalt.kPage, getInitPage());
             bundle.putBundle(Cobalt.kExtras, extras);
         }
-        //Bundle extras = (bundle != null) ? bundle.getBundle(Cobalt.kExtras) : null;
 
         if (bundle.containsKey(Cobalt.kJSData)) {
             try {
@@ -389,12 +381,14 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         ActionBar actionBar = getSupportActionBar();
 
         // Default
-        actionBar.setTitle(null);
-        if (sActivitiesArrayList.size() == 1) {
-            actionBar.setDisplayHomeAsUpEnabled(false);
-        }
-        else {
-            actionBar.setDisplayHomeAsUpEnabled(true);
+        if (actionBar != null) {
+            actionBar.setTitle(null);
+            if (sActivitiesArrayList.size() == 1) {
+                actionBar.setDisplayHomeAsUpEnabled(false);
+            }
+            else {
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
         }
 
         if (configuration != null) {
@@ -407,7 +401,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             }
             try {
                 int backgroundColorInt = Cobalt.parseColor(backgroundColor);
-                actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
+                if (actionBar != null) actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
                 bottomBar.setBackgroundColor(backgroundColorInt);
             }
             catch (IllegalArgumentException exception) {
@@ -428,10 +422,10 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 topBar.setTitleTextColor(colorInt);
 
                 Drawable overflowIconDrawable = topBar.getOverflowIcon();
-                overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                if (overflowIconDrawable != null) overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
 
                 Drawable navigationIconDrawable = topBar.getNavigationIcon();
-                navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                if (navigationIconDrawable != null) navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
             }
             catch (IllegalArgumentException exception) {
                 if (Cobalt.DEBUG) {
@@ -455,7 +449,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                         logoDrawable = getResources().getDrawable(logoResId);
                     }
 
-                    if (applyColor) {
+                    if (applyColor && logoDrawable != null) {
                         logoDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
                     }
                 }
@@ -463,19 +457,19 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                     logoDrawable = CobaltFontManager.getCobaltFontDrawable(this, logo, colorInt);
                 }
                 topBar.setLogo(logoDrawable);
-                actionBar.setDisplayShowHomeEnabled(true);
+                if (actionBar != null) actionBar.setDisplayShowHomeEnabled(true);
             }
             else {
-                actionBar.setDisplayShowHomeEnabled(false);
+                if (actionBar != null) actionBar.setDisplayShowHomeEnabled(false);
             }
 
             // Title
             String title = configuration.optString(Cobalt.kBarsTitle);
             if (title.length() != 0) {
-                actionBar.setTitle(title);
+                if (actionBar != null) actionBar.setTitle(title);
             }
             else {
-                actionBar.setDisplayShowTitleEnabled(false);
+                if (actionBar != null) actionBar.setDisplayShowTitleEnabled(false);
             }
 
             // Visible
@@ -486,7 +480,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             JSONObject navigationIcon = configuration.optJSONObject(Cobalt.kBarsNavigationIcon);
             if (navigationIcon == null) navigationIcon = new JSONObject();
             boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
-            actionBar.setDisplayHomeAsUpEnabled(enabled);
+            if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(enabled);
             Drawable navigationIconDrawable;
 
             String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
@@ -499,7 +493,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                     else {
                         navigationIconDrawable = getResources().getDrawable(iconResId);
                     }
-                    if (applyColor) {
+                    if (applyColor && navigationIconDrawable != null) {
                         navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
                     }
                 }
@@ -625,7 +619,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         if (visible != null) {
             ActionBar actionBar = getSupportActionBar();
             BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
-            if (visible.has(Cobalt.kVisibleTop)) {
+            if (visible.has(Cobalt.kVisibleTop) && actionBar != null) {
                 boolean top = visible.optBoolean(Cobalt.kVisibleTop);
 
                 if (!top && actionBar.isShowing()) {
@@ -658,7 +652,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 try {
                     String backgroundColor = content.getString(Cobalt.kBarsBackgroundColor);
                     int backgroundColorInt = Cobalt.parseColor(backgroundColor);
-                    actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
+                    if (actionBar != null) actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
                     bottomBar.setBackgroundColor(backgroundColorInt);
                 } catch (IllegalArgumentException exception) {
                     if (Cobalt.DEBUG) {
@@ -678,10 +672,14 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                     topBar.setTitleTextColor(colorInt[0]);
 
                     Drawable overflowIconDrawable = topBar.getOverflowIcon();
-                    overflowIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
+                    if (overflowIconDrawable != null) {
+                        overflowIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
+                    }
 
                     Drawable navigationIconDrawable = topBar.getNavigationIcon();
-                    navigationIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
+                    if (navigationIconDrawable != null) {
+                        navigationIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
+                    }
                 } catch (IllegalArgumentException exception) {
                     if (Cobalt.DEBUG) {
                         Log.w(Cobalt.TAG, TAG + " - setupBars: color format not supported, use (#)RGB or (#)RRGGBB(AA).");
@@ -706,16 +704,16 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                                 logoDrawable = getResources().getDrawable(logoResId);
                             }
 
-                            if (applyColor[0]) {
+                            if (applyColor[0] && logoDrawable != null) {
                                 logoDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
                             }
                         } else {
                             logoDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), logo, colorInt[0]);
                         }
                         topBar.setLogo(logoDrawable);
-                        actionBar.setDisplayShowHomeEnabled(true);
+                        if (actionBar != null) actionBar.setDisplayShowHomeEnabled(true);
                     } else {
-                        actionBar.setDisplayShowHomeEnabled(false);
+                        if (actionBar != null) actionBar.setDisplayShowHomeEnabled(false);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -727,7 +725,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                     JSONObject navigationIcon = content.getJSONObject(Cobalt.kBarsNavigationIcon);
                     if (navigationIcon == null) navigationIcon = new JSONObject();
                     boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
-                    actionBar.setDisplayHomeAsUpEnabled(enabled);
+                    if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(enabled);
                     Drawable navigationIconDrawable;
 
                     String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
@@ -739,7 +737,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                             } else {
                                 navigationIconDrawable = getResources().getDrawable(iconResId);
                             }
-                            if (applyColor[0]) {
+                            if (applyColor[0] && navigationIconDrawable != null) {
                                 navigationIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
                             }
                         } else {
@@ -752,7 +750,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 }
             }
 
-            if (content.has(Cobalt.kBarsTitle)) {
+            if (content.has(Cobalt.kBarsTitle) && actionBar != null) {
                 try {
                     String title = content.getString(Cobalt.kBarsTitle);
                     if (title.length() != 0) {
