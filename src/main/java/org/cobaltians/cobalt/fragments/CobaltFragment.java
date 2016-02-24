@@ -371,7 +371,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 */
 	private void executeScriptInWebView(final JSONObject jsonObj) {
         if (jsonObj != null) {
-			if (mCobaltIsReady) {
+			if (mCobaltIsReady && isAdded()) {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
