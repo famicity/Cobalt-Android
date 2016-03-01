@@ -40,6 +40,7 @@ import org.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -259,7 +260,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
         Bundle extras = bundle.getBundle(Cobalt.kExtras);
         if (extras == null) {
-            extras = Cobalt.getInstance(this.getApplicationContext()).getConfigurationForController(getInitController());
+            extras = Cobalt.getInstance(getApplicationContext()).getConfigurationForController(getInitController());
         }
         if (extras.containsKey(Cobalt.kBars)) {
             try {
@@ -394,7 +395,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         if (configuration != null) {
             // Background color
             // TODO: apply on overflow popup
-            //TODO : see how get and set the default color value when barsBackgroundcolor and barsColor were null
             String backgroundColor = configuration.optString(Cobalt.kBarsBackgroundColor, null);
             if (backgroundColor == null) {
                 backgroundColor = getDefaultActionBarBackgroundColor();
@@ -422,9 +422,11 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 topBar.setTitleTextColor(colorInt);
 
                 Drawable overflowIconDrawable = topBar.getOverflowIcon();
+                // TODO: @sebf should never be null
                 if (overflowIconDrawable != null) overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
 
                 Drawable navigationIconDrawable = topBar.getNavigationIcon();
+                // TODO: @sebf should never be null
                 if (navigationIconDrawable != null) navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
             }
             catch (IllegalArgumentException exception) {
@@ -436,24 +438,30 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
 
             // Logo
-            String logo = configuration.optString(Cobalt.kBarsIcon);
-            if (!logo.equals("")) {
-                Drawable logoDrawable;
+            String logo = configuration.optString(Cobalt.kBarsIcon, null);
+            if (logo != null) {
+                Drawable logoDrawable = null;
 
                 int logoResId = getResourceIdentifier(logo);
                 if (logoResId != 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        logoDrawable = getResources().getDrawable(logoResId, null);
-                    }
-                    else {
-                        logoDrawable = getResources().getDrawable(logoResId);
-                    }
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            logoDrawable = getResources().getDrawable(logoResId, null);
+                        } else {
+                            logoDrawable = getResources().getDrawable(logoResId);
+                        }
 
-                    if (applyColor && logoDrawable != null) {
-                        logoDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                        if (applyColor && logoDrawable != null) {
+                            logoDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                        }
+                    }
+                    catch(Resources.NotFoundException exception) {
+                        Log.w(Cobalt.TAG, TAG + " - setupBars: " + logo + " resource not found.");
+                        exception.printStackTrace();
                     }
                 }
                 else {
+                    // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
                     logoDrawable = CobaltFontManager.getCobaltFontDrawable(this, logo, colorInt);
                 }
                 topBar.setLogo(logoDrawable);
@@ -464,8 +472,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             }
 
             // Title
-            String title = configuration.optString(Cobalt.kBarsTitle);
-            if (title.length() != 0) {
+            String title = configuration.optString(Cobalt.kBarsTitle, null);
+            if (title != null) {
                 if (actionBar != null) actionBar.setTitle(title);
             }
             else {
@@ -481,23 +489,31 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             if (navigationIcon == null) navigationIcon = new JSONObject();
             boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
             if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(enabled);
-            Drawable navigationIconDrawable;
+            Drawable navigationIconDrawable = null;
 
-            String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon);
-            if (!icon.equals("")) {
+            String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon, null);
+            if (icon != null) {
                 int iconResId = getResourceIdentifier(icon);
                 if (iconResId != 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        navigationIconDrawable = getResources().getDrawable(iconResId, null);
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            navigationIconDrawable = getResources().getDrawable(iconResId, null);
+                        }
+                        else {
+                            navigationIconDrawable = getResources().getDrawable(iconResId);
+                        }
+
+                        if (applyColor && navigationIconDrawable != null) {
+                            navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                        }
                     }
-                    else {
-                        navigationIconDrawable = getResources().getDrawable(iconResId);
-                    }
-                    if (applyColor && navigationIconDrawable != null) {
-                        navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
+                    catch(Resources.NotFoundException exception) {
+                        Log.w(Cobalt.TAG, TAG + " - setupBars: " + logo + " resource not found.");
+                        exception.printStackTrace();
                     }
                 }
                 else {
+                    // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
                     navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
                 }
                 topBar.setNavigationIcon(navigationIconDrawable);
@@ -511,6 +527,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         //LinearLayout bottomBar = (LinearLayout) findViewById(getBottomBarId());
         BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
 
+        // TODO: make bars more flexible
         if (actionBar == null
             || bottomBar == null) {
             if (Cobalt.DEBUG) {
@@ -800,6 +817,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
             final MenuItem menuItem = menu.add(Menu.NONE, id, order, title);
 
+            // TODO: check for API 8 -> 10
             int showAsAction = MenuItem.SHOW_AS_ACTION_IF_ROOM;
             switch(position) {
                 case Cobalt.kPositionBottom:

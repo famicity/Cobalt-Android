@@ -120,6 +120,7 @@ public class CobaltFontManager {
         HashMap<String, Class<? extends CobaltAbstractFontDrawable>> fontMap = new HashMap<>();
 
         try {
+            // TODO: make the Cobalt method public and use it instead of reimplement it
             JSONObject configuration = getConfiguration();
             JSONObject fonts = configuration.getJSONObject(kFonts);
             Iterator<String> fontsIterator = fonts.keys();
@@ -165,6 +166,7 @@ public class CobaltFontManager {
      * HELPER METHODS
      **********************************************************************************************/
 
+    // TODO: remove
     private static JSONObject getConfiguration() {
         String mResourcePath = Cobalt.getInstance(mContext).getResourcePathFromAsset();
         String configuration = readFileFromAssets( mResourcePath + CONF_FILE);
@@ -180,6 +182,7 @@ public class CobaltFontManager {
         return new JSONObject();
     }
 
+    // TODO: remove
     private static String readFileFromAssets(String file) {
         try {
             AssetManager assetManager = mContext.getAssets();

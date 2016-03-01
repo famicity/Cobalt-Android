@@ -69,9 +69,12 @@ public class ActionViewMenuItem extends RelativeLayout {
         mContext = context;
         mInflater = LayoutInflater.from(mContext);
         try {
+            // TODO: @sebf not useful, you already save the action
             this.mName = action.getString(Cobalt.kActionName);
             this.mAction = action;
+            // TODO: @sebf rename mBarsColor for better understanding
             this.mColor = barsColor;
+            // TODO: @sebf prefer pass the listener apart with a WeakReference
             this.mListener = (ActionViewMenuItemListener) context;
 
         } catch (JSONException e) {
@@ -102,10 +105,16 @@ public class ActionViewMenuItem extends RelativeLayout {
                 else idResource = getResource(icon);
 
                 if (idResource != 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+                    try {
+                        //TODO: @sebf where is the color applied?
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+                        } else
+                            mImageButton.setImageDrawable(mContext.getResources().getDrawable(idResource));
                     }
-                    else mImageButton.setImageDrawable(mContext.getResources().getDrawable(idResource));
+                    catch(Resources.NotFoundException exception) {
+                        exception.printStackTrace();
+                    }
                 }
                 else {
                     int iconColor = 0;
@@ -121,11 +130,13 @@ public class ActionViewMenuItem extends RelativeLayout {
                         exception.printStackTrace();
                     }
 
+                    // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
                     mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, iconColor));
                 }
 
                 mImageButton.setEnabled(enabled);
 
+                // TODO: @sebf you could use a ternary expression here ;)
                 if (visible) {
                     mImageButton.setVisibility(VISIBLE);
                 }
@@ -165,7 +176,7 @@ public class ActionViewMenuItem extends RelativeLayout {
 
                         exception.printStackTrace();
                     }
-
+                    // TODO: @sebf default color to black?
                     mButton.setTextColor(textColor);
                 }
                 mButton.setEnabled(enabled);
@@ -200,6 +211,7 @@ public class ActionViewMenuItem extends RelativeLayout {
         }
     }
 
+    // TODO: @sebf You'd better use the CobaltActivity.getResourceIdentifier method or move it into Cobalt class
     protected int getResource(String imageLink) {
         if (!imageLink.contains(":")) {
             return this.getResources().getIdentifier(imageLink,"drawable", mContext.getPackageName());
