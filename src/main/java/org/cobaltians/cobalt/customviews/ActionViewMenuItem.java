@@ -234,6 +234,7 @@ public class ActionViewMenuItem extends RelativeLayout {
     public String getName(){ return mName;}
 
     public void setActionBadge(String text) {
+        // TODO: @sebf it's the same thing!
         if (text.length()>0 && !text.equals("")) {
             mBadgeTv.setText(text);
             mBadgeTv.setVisibility(View.VISIBLE);
@@ -245,6 +246,9 @@ public class ActionViewMenuItem extends RelativeLayout {
     }
 
     public void setActionContent(JSONObject content) {
+        // TODO: @sebf You're not forced to track the action content because,
+        // compared to iOS, where bars are the navigationController ones, so need to be reset at push then re-init at pop,
+        // on Android, they're activity ones.
 		mAction = content;
 		
         String androidIcon = mAction.optString(Cobalt.kActionAndroidIcon, null);
@@ -252,32 +256,21 @@ public class ActionViewMenuItem extends RelativeLayout {
         String icon = mAction.optString(Cobalt.kActionIcon, null);
         String color = mAction.optString(Cobalt.kActionColor, mColor);
 
-        if (title != null) mButton.setText(title);
-        if (color != null) {
-            int textColor = 0;
-            try {
-                textColor = Cobalt.parseColor(color);
-            }
-            catch (IllegalArgumentException exception) {
-                if (Cobalt.DEBUG) {
-                    Log.w(Cobalt.TAG, TAG + " - init setTextColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                }
-
-                exception.printStackTrace();
-            }
-
-            mButton.setTextColor(textColor);
-        }
-
         if (androidIcon != null || icon != null) {
             int idResource;
             if (androidIcon != null)  idResource = getResource(androidIcon);
             else idResource = getResource(icon);
             if (idResource != 0) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+                try {
+                    //TODO: @sebf where is the color applied?
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        mImageButton.setImageDrawable(mContext.getDrawable(idResource));
+                    }
+                    else mImageButton.setImageDrawable(mContext.getResources().getDrawable(idResource));
                 }
-                else mImageButton.setImageDrawable(mContext.getResources().getDrawable(idResource));
+                catch(Resources.NotFoundException exception) {
+                    exception.printStackTrace();
+                }
             }
             else {
                 int iconColor = 0;
@@ -295,12 +288,33 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, iconColor));
             }
         }
+        else if (title != null) {
+            mButton.setText(title);
+
+            // TODO: @sebf cannot happen
+            if (color != null) {
+                int textColor = 0;
+                try {
+                    textColor = Cobalt.parseColor(color);
+                }
+                catch (IllegalArgumentException exception) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + " - init setTextColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                    }
+
+                    exception.printStackTrace();
+                }
+
+                mButton.setTextColor(textColor);
+            }
+        }
     }
 
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         if (enabled) {
+            // TODO: @sebf Why check if visible or not before set?
             if (!mImageButton.isEnabled()) {
                 mImageButton.setEnabled(true);
             }
