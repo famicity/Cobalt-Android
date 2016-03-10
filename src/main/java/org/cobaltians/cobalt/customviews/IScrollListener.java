@@ -1,6 +1,6 @@
 /**
  *
- * IGestureListener
+ * IScrollListener
  * Cobalt
  *
  * The MIT License (MIT)
@@ -27,21 +27,20 @@
  *
  */
 
-package fr.cobaltians.cobalt.customviews;
+package org.cobaltians.cobalt.customviews;
 
 /**
- * Interface providing a method to listen to the swipe of an SwipeWebView
- * @author Sebastien
+ * Interface providing a method to listen to the scroll of an OverScrollingWebview
+ * @author Diane
  */
-public interface IGestureListener {
+public interface IScrollListener {
 
-	public final static int GESTURE_SWIPE_LEFT = 0;		// Swipe from right to left
-	public final static int GESTURE_SWIPE_RIGHT = 1;	// Swipe from left to right
-	
 	/**
-	 * Called after the SwipeWebView has swiped.
-	 * @param direction true if swipe from right to left
-	 * 					false otherwise
+	 * Called after the OverScrollingWebView has scrolled.
+	 * @param scrollX New X scroll value in pixels
+	 * @param scrollY New Y scroll value in pixels
+	 * @param oldscrollX old X scroll value in pixels
+	 * @param oldscrollY old Y scroll value in pixels
 	 */
-	void onSwipeGesture(int direction);
+	void onOverScrolled(int scrollX, int scrollY,int oldscrollX, int oldscrollY);
 }

@@ -27,16 +27,17 @@
  *
  */
 
-package fr.cobaltians.cobalt;
+package org.cobaltians.cobalt;
 
-import fr.cobaltians.cobalt.activities.CobaltActivity;
-import fr.cobaltians.cobalt.fragments.CobaltFragment;
-import fr.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
+import org.cobaltians.cobalt.activities.CobaltActivity;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
+import org.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -72,20 +73,33 @@ public class Cobalt {
     private final static String kPlugins = "plugins";
     private final static String kAndroid = "android";
     private final static String kDefaultController = "default";
-    // TODO: uncomment for Bars
-    /*
+
     public final static String kBars = "bars";
-    public final static String kVisible = "visible";
-    public final static String kBackgroundColor = "backgroundColor";
-    public final static String kIcon = "androidIcon";
-    public final static String kTitle = "title";
-    public final static String kActions = "actions";
-    public final static String kName = "name";
-    public final static String kPosition = "androidPosition";
-    public final static String kPositionOverflow = "overflow";
+    public final static String kBarsVisible = "visible";
+    public final static String kVisibleTop = "top";
+    public final static String kVisibleBottom = "bottom";
+    public final static String kBarsBackgroundColor = "backgroundColor";
+    public final static String kBarsColor = "color";
+    public final static String kBarsTitle = "title";
+    public final static String kBarsIcon = "androidIcon";
+    public final static String kBarsNavigationIcon = "androidNavigationIcon";
+    public final static String kNavigationIconEnabled = "enabled";
+    public final static String kNavigationIconIcon = "icon";
+    public final static String kBarsActions = "actions";
+    public final static String kActionActions = "actions";
+    public final static String kActionName = "name";
+    public final static String kActionTitle = "title";
+    public final static String kActionPosition = "androidPosition";
     public final static String kPositionTop = "top";
+    public final static String kPositionOverflow = "overflow";
     public final static String kPositionBottom = "bottom";
-    */
+    public final static String kActionIcon = "icon";
+    public final static String kActionAndroidIcon = "androidIcon";
+    public final static String kActionColor = "color";
+    public final static String kActionVisible = "visible";
+    public final static String kActionEnabled = "enabled";
+    public final static String kActionBadge = "badge";
+
     public final static String kExtras = "extras";
     public final static String kPage = "page";
     public final static String kActivity = "activity";
@@ -142,6 +156,7 @@ public class Cobalt {
     public final static String JSActionNavigationDismiss = "dismiss";
     public final static String JSActionNavigationReplace = "replace";
     public final static String kJSController = "controller";
+    public final static String kJSBars = "bars";
     public final static String kJSAnimated = "animated";
     public final static String kJSClearHistory = "clearHistory";
 
@@ -160,14 +175,20 @@ public class Cobalt {
     public final static String kJSAlertCancelable = "cancelable";
     public final static String kJSAlertButtonIndex  = "index";
 
-
-    // TODO: uncomment for Bars
     // BARS
-    /*
     public final static String JSControlBars = "bars";
-    public final static String JSActionButtonPressed = "buttonPressed";
-    public final static String kJSBarsButton = "button";
-    */
+    public final static String JSActionActionPressed = "actionPressed";
+    public final static String kJSActionName = "name";
+    public final static String JSActionSetBars = "setBars";
+    public final static String JSActionSetActionBadge = "setActionBadge";
+    public final static String JSActionSetActionContent = "setActionContent";
+    public final static String JSActionSetBarsVisible = "setBarsVisible";
+    public final static String JSActionSetBarContent = "setBarContent";
+    public final static String JSActionSetActionVisible = "setActionVisible";
+    public final static String JSActionSetActionEnabled = "setActionEnabled";
+    public final static String kContent = "content";
+    public final static String kVisible = "visible";
+    public final static String kEnabled = "enabled";
 
     // DATE PICKER
     public static final String JSControlPicker = "picker";
@@ -211,10 +232,9 @@ public class Cobalt {
 
     private static Cobalt sInstance;
     private static Context mContext;
+    private static JSONObject sCobaltConfiguration;
 
     private String mResourcePath = "www/";
-
-    private static String PACKAGE_NAME;
 
     private int mRunningActivities = 0;
     private boolean mFirstActivityStart = true;
@@ -249,13 +269,10 @@ public class Cobalt {
         else mResourcePath = "";
 	}
 
+    public String getResourcePathFromAsset() {return mResourcePath;}
+
     public static Context getAppContext() {
         return mContext;
-    }
-
-    public void setPackageName(String packageName) {
-        if (packageName != null) PACKAGE_NAME = packageName;
-        else PACKAGE_NAME = getAppContext().getPackageName();
     }
 
     /**********************************************************************************************
@@ -345,8 +362,7 @@ public class Cobalt {
             JSONObject controllers = configuration.getJSONObject(kControllers);
 
             String activity;
-            // TODO: uncomment for Bars
-            //JSONObject actionBar;
+            JSONObject bars;
             boolean enablePullToRefresh;
             boolean enableInfiniteScroll;
             int infiniteScrollOffset;
@@ -355,23 +371,23 @@ public class Cobalt {
             if (controller != null
                 && controllers.has(controller)) {
                 activity = controllers.getJSONObject(controller).getString(kAndroid);
-                //actionBar = controllers.getJSONObject(controller).optJSONObject(kBars);
+                bars = controllers.getJSONObject(controller).optJSONObject(kBars);
                 enablePullToRefresh = controllers.getJSONObject(controller).optBoolean(kPullToRefresh);
                 enableInfiniteScroll = controllers.getJSONObject(controller).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(controller).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
             }
             else {
                 activity = controllers.getJSONObject(kDefaultController).getString(kAndroid);
-                //actionBar = controllers.getJSONObject(kDefaultController).optJSONObject(kBars);
+                bars = controllers.getJSONObject(kDefaultController).optJSONObject(kBars);
                 enablePullToRefresh = controllers.getJSONObject(kDefaultController).optBoolean(kPullToRefresh);
                 enableInfiniteScroll = controllers.getJSONObject(kDefaultController).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(kDefaultController).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
             }
 
-            if (activity.substring(0,1).equals(".")) activity = PACKAGE_NAME + activity;
+            if (activity.substring(0,1).equals(".")) activity = mContext.getPackageName() + activity;
 
             bundle.putString(kActivity, activity);
-            //if (actionBar != null) bundle.putString(kBars, actionBar.toString());
+            if (bars != null) bundle.putString(kBars, bars.toString());
             bundle.putBoolean(kPullToRefresh, enablePullToRefresh);
             bundle.putBoolean(kInfiniteScroll, enableInfiniteScroll);
             bundle.putInt(kInfiniteScrollOffset, infiniteScrollOffset);
@@ -444,17 +460,18 @@ public class Cobalt {
      **********************************************************************************************/
 
     private JSONObject getConfiguration() {
-        String configuration = readFileFromAssets(mResourcePath + CONF_FILE);
-
-        try {
-            return new JSONObject(configuration);
+        if (sCobaltConfiguration == null) {
+            String configuration = readFileFromAssets(mResourcePath + CONF_FILE);
+            try {
+                sCobaltConfiguration = new JSONObject(configuration);
+            }
+            catch (JSONException exception) {
+                if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - getConfiguration: check cobalt.conf. File is missing or not at " + ASSETS_PATH + mResourcePath + CONF_FILE);
+                exception.printStackTrace();
+                return new JSONObject();
+            }
         }
-        catch (JSONException exception) {
-            if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - getConfiguration: check cobalt.conf. File is missing or not at " + ASSETS_PATH + mResourcePath + CONF_FILE);
-            exception.printStackTrace();
-        }
-
-        return new JSONObject();
+        return sCobaltConfiguration;
     }
 
     private String readFileFromAssets(String file) {
@@ -480,5 +497,42 @@ public class Cobalt {
         }
 
         return "";
+    }
+
+    /**
+     * Parses the color string and return the corresponding color-int.
+     * @param color the color string to parse. Supported formats are (#)RGB & (#)RRGGBB(AA).
+     * @return the corresponding color-int.
+     * @throws IllegalArgumentException if the string cannot be parsed.
+     */
+    public static int parseColor(String color) throws IllegalArgumentException {
+        if (color == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (! color.startsWith("#")) {
+            color = "#" + color;
+        }
+
+        switch(color.length()) {
+            case 4:
+                // #RGB -> #RRGGBB
+                String red = color.substring(1, 2);
+                String green = color.substring(2, 3);
+                String blue = color.substring(3, 4);
+                color = "#" + red + red + green + green + blue + blue;
+                break;
+            case 7:
+                // #RRGGBB
+                break;
+            case 9:
+                // #RRGGBBAA -> #AARRGGBB
+                color = "#" + color.substring(7, 9) + color.substring(1, 7);
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
+        return Color.parseColor(color);
     }
 }

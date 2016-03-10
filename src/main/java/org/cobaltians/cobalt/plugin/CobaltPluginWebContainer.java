@@ -1,6 +1,6 @@
 /**
  *
- * OverScrollingWebView
+ * CobaltPluginWebContainer
  * Cobalt
  *
  * The MIT License (MIT)
@@ -27,47 +27,39 @@
  *
  */
 
-package fr.cobaltians.cobalt.customviews;
+package org.cobaltians.cobalt.plugin;
 
-import fr.cobaltians.cobalt.fragments.CobaltFragment;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.webkit.WebView;
+import android.app.Activity;
 
-public class OverScrollingWebView extends WebView {
+public final class CobaltPluginWebContainer {
 
-	/**
-	 * Fragment handling scroll events
-	 */
-	protected CobaltFragment mScrollListener;
-
-	public OverScrollingWebView(Context context) {
-		super(context);
-	}
-
-	public OverScrollingWebView(Context context, AttributeSet attributes) {
-		super(context, attributes);
-	}
+	/**************************************
+     * MEMBERS
+     **************************************/
 	
-	public OverScrollingWebView(Context context, AttributeSet attributes, int defaultStyle) {
-		super(context, attributes, defaultStyle);
+	private final Activity mActivity;
+	private final CobaltFragment mFragment;
+	
+	/****************************************************************************
+     * CONSTRUCTORS
+     ****************************************************************************/
+	
+	public CobaltPluginWebContainer(Activity activity, CobaltFragment fragment) {
+		mActivity = activity;
+		mFragment = fragment;
 	}
 
-	public void setScrollListener(CobaltFragment scrollListener) {
-		mScrollListener = scrollListener;
+	/************************************
+     * GETTERS
+     ************************************/
+	
+	public Activity getActivity() {
+		return mActivity;
 	}
 
-	/**
-	 * Notifies listener of scrolling
-	 */
-	@Override
-	protected void onScrollChanged(int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-		super.onScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);
-		
-		if (mScrollListener != null
-			&& IScrollListener.class.isAssignableFrom(mScrollListener.getClass())) {
-			mScrollListener.onOverScrolled(scrollX, scrollY, oldScrollX, oldScrollY);
-		}
-	}	
+	public CobaltFragment getFragment() {
+		return mFragment;
+	}
 }

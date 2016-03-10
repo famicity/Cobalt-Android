@@ -27,10 +27,10 @@
  *
  */
 
-package fr.cobaltians.cobalt.plugin;
+package org.cobaltians.cobalt.plugin;
 
-import fr.cobaltians.cobalt.Cobalt;
-import fr.cobaltians.cobalt.fragments.CobaltFragment;
+import org.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
 
 import android.app.Activity;
 import android.content.Context;

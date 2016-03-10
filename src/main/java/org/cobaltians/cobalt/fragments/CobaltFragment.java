@@ -27,20 +27,16 @@
  *
  */
 
-package fr.cobaltians.cobalt.fragments;
+package org.cobaltians.cobalt.fragments;
 
-import android.content.ComponentName;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import fr.cobaltians.cobalt.Cobalt;
-import fr.cobaltians.cobalt.R;
-import fr.cobaltians.cobalt.activities.CobaltActivity;
-import fr.cobaltians.cobalt.customviews.CobaltSwipeRefreshLayout;
-import fr.cobaltians.cobalt.customviews.IScrollListener;
-import fr.cobaltians.cobalt.customviews.OverScrollingWebView;
-import fr.cobaltians.cobalt.database.LocalStorageJavaScriptInterface;
-import fr.cobaltians.cobalt.plugin.CobaltPluginManager;
+import org.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.R;
+import org.cobaltians.cobalt.activities.CobaltActivity;
+import org.cobaltians.cobalt.customviews.CobaltSwipeRefreshLayout;
+import org.cobaltians.cobalt.customviews.IScrollListener;
+import org.cobaltians.cobalt.customviews.OverScrollingWebView;
+import org.cobaltians.cobalt.database.LocalStorageJavaScriptInterface;
+import org.cobaltians.cobalt.plugin.CobaltPluginManager;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -241,7 +237,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         return R.id.swipe_refresh_container;
     }
 
-	/**
+	/**c
 	 * Sets up listeners for components inflated from the given layout and the parent view.
 	 * This method should be overridden in subclasses.
 	 */
@@ -375,23 +371,27 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 */
 	private void executeScriptInWebView(final JSONObject jsonObj) {
         if (jsonObj != null) {
-			if (mCobaltIsReady) {
-                mWebView.post(new Runnable() {
+			if (mCobaltIsReady && isAdded()) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mWebView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Line & paragraph separators are not JSON compliant but supported by JSONObject
+                                String script = jsonObj.toString().replaceAll("[\u2028\u2029]", "");
 
-					@Override
-					public void run() {
-						// Line & paragraph separators are not JSON compliant but supported by JSONObject
-						String script = jsonObj.toString().replaceAll("[\u2028\u2029]", "");
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                    // Since KitKat, messages are automatically urldecoded when received from the web. encoding them to fix this.
+                                    script = script.replaceAll("%", "%25");
+                                }
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                            // Since KitKat, messages are automatically urldecoded when received from the web. encoding them to fix this.
-                            script = script.replaceAll("%","%25");
-                        }
-
-                        String url = "javascript:cobalt.execute(" + script + ");";
-                        mWebView.loadUrl(url);
-					}
-				});
+                                String url = "javascript:cobalt.execute(" + script + ");";
+                                mWebView.loadUrl(url);
+                            }
+                        });
+                    }
+                });
 			}
 			else {
 				if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeScriptInWebView: adding message to queue: " + jsonObj);
@@ -578,10 +578,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             // PUSH
                             case Cobalt.JSActionNavigationPush:
                                 data = jsonObj.getJSONObject(Cobalt.kJSData);
-                                page = data.getString(Cobalt.kJSPage);
-                                controller = data.optString(Cobalt.kJSController, null);
-                                JSONObject dataToPush = data.optJSONObject(Cobalt.kJSData);
-                                push(controller, page, dataToPush);
+                                push(data);
                                 return true;
                             // POP
                             case Cobalt.JSActionNavigationPop:
@@ -598,11 +595,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             // MODAL
                             case Cobalt.JSActionNavigationModal:
                                 data = jsonObj.getJSONObject(Cobalt.kJSData);
-                                page = data.getString(Cobalt.kJSPage);
-                                controller = data.optString(Cobalt.kJSController, null);
                                 String callbackId = jsonObj.optString(Cobalt.kJSCallback, null);
-                                JSONObject dataForModal = data.optJSONObject(Cobalt.kJSData);
-                                presentModal(controller, page, dataForModal, callbackId);
+                                presentModal(data, callbackId);
                                 return true;
                             // DISMISS
                             case Cobalt.JSActionNavigationDismiss:
@@ -616,12 +610,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             // REPLACE
                             case Cobalt.JSActionNavigationReplace:
                                 data = jsonObj.getJSONObject(Cobalt.kJSData);
-                                controller = data.optString(Cobalt.kJSController, null);
-                                page = data.getString(Cobalt.kJSPage);
-                                JSONObject dataForReplace = data.optJSONObject(Cobalt.kJSData);
-                                boolean animated = data.optBoolean(Cobalt.kJSAnimated);
-                                boolean clearHistory = data.optBoolean(Cobalt.kJSClearHistory, false);
-                                replace(controller, page, dataForReplace, animated, clearHistory);
+                                replace(data);
                                 return true;
                             // UNHANDLED NAVIGATION
                             default:
@@ -708,7 +697,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     return false;
                 }
             case Cobalt.JSCallbackPullToRefreshDidRefresh:
-                mHandler.post(new Runnable() {
+                mWebView.post(new Runnable() {
 
                     @Override
                     public void run() {
@@ -717,7 +706,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 });
                 return true;
             case Cobalt.JSCallbackInfiniteScrollDidRefresh:
-                mHandler.post(new Runnable() {
+                mWebView.post(new Runnable() {
 
                     @Override
                     public void run() {
@@ -740,8 +729,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	
 	private boolean handleUi(String control, JSONObject data, String callback) {
 		try {
-			// PICKER
             switch (control) {
+                // PICKER
                 case Cobalt.JSControlPicker:
                     String type = data.getString(Cobalt.kJSType);
 
@@ -776,13 +765,146 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     }
 
                     break;
+                // ALERT
                 case Cobalt.JSControlAlert:
                     showAlertDialog(data, callback);
                     return true;
+                // TOAST
                 case Cobalt.JSControlToast:
                     String message = data.getString(Cobalt.kJSMessage);
                     Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
                     return true;
+                // BARS
+                case Cobalt.JSControlBars:
+                    String action = data.getString(Cobalt.kJSAction);
+                    switch(action) {
+                        // SET BARS
+                        case Cobalt.JSActionSetBars:
+                            JSONObject bars = data.optJSONObject(Cobalt.kJSBars);
+                            setBars(bars);
+                            return true;
+                        case Cobalt.JSActionSetActionBadge:
+                            //TODO: @sebf prefer using get instead of opt for mandatory keys and output error message if an exception throws. Same for all following cases
+                            try {
+                                final String name = data.getString(Cobalt.kActionName);
+                                final String badge = data.getString(Cobalt.kActionBadge);
+
+                                //TODO: @sebf always check for nullability on mContext! Same for all following cases
+                                final CobaltActivity activity = (CobaltActivity) mContext;
+                                if (activity != null) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            activity.setBadgeMenuItem(name, badge);
+                                        }
+                                    });
+                                }
+                            }
+                            catch(JSONException exception) {
+                                exception.printStackTrace();
+                            }
+                            return true;
+                        case Cobalt.JSActionSetActionContent:
+                            try {
+                                final String nameContent = data.getString(Cobalt.kActionName);
+                                final JSONObject content = data.getJSONObject(Cobalt.kContent);
+
+                                final CobaltActivity activity = (CobaltActivity) mContext;
+                                if (activity != null) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            activity.setContentMenuItem(nameContent, content);
+                                        }
+                                    });
+                                }
+                            }
+                            catch(JSONException exception) {
+                                exception.printStackTrace();
+                            }
+
+                            return true;
+                        case Cobalt.JSActionSetBarsVisible:
+                            try {
+                                final JSONObject visible = data.getJSONObject(Cobalt.kVisible);
+
+                                final CobaltActivity activity = (CobaltActivity) mContext;
+                                if (activity != null) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            activity.setActionBarVisible(visible);
+                                        }
+                                    });
+                                }
+                            }
+                            catch(JSONException exception) {
+                                exception.printStackTrace();
+                            }
+                            return true;
+                        case Cobalt.JSActionSetBarContent:
+                            try {
+                                final JSONObject barsContent = data.getJSONObject(Cobalt.kContent);
+
+                                final CobaltActivity activity = (CobaltActivity) mContext;
+                                if (activity != null) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            activity.setBarContent(barsContent);
+                                        }
+                                    });
+                                }
+                            }
+                            catch(JSONException exception) {
+                                exception.printStackTrace();
+                            }
+
+                            return true;
+                        case Cobalt.JSActionSetActionVisible:
+                            try {
+                                final String actionName = data.getString(Cobalt.kActionName);
+                                final boolean actionVisible = data.getBoolean(Cobalt.kVisible);
+
+                                final CobaltActivity activity = (CobaltActivity) mContext;
+                                if (activity != null) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            activity.setActionItemVisible(actionName, actionVisible);
+                                        }
+                                    });
+                                }
+                            }
+                            catch(JSONException exception) {
+                                exception.printStackTrace();
+                            }
+
+                            return true;
+                        case Cobalt.JSActionSetActionEnabled:
+                            try {
+                                final String actionNameEnabled = data.getString(Cobalt.kActionName);
+                                final boolean actionEnabled = data.getBoolean(Cobalt.kEnabled);
+
+                                final CobaltActivity activity = (CobaltActivity) mContext;
+                                if (activity != null) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            activity.setActionItemEnabled(actionNameEnabled, actionEnabled);
+                                        }
+                                    });
+                                }
+                            }
+                            catch(JSONException exception) {
+                                exception.printStackTrace();
+                            }
+
+                            return true;
+                        default:
+                            break;
+                    }
+                    break;
                 default:
                     break;
             }
@@ -808,22 +930,68 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		
 		return false;
 	}
-	
+
+    protected void setBars(final JSONObject actionBar) {
+        if (mContext != null) {
+            Intent intent = ((CobaltActivity) mContext).getIntent();
+            Bundle bundle = intent.getExtras();
+            if (bundle == null) {
+                bundle = new Bundle();
+            }
+            Bundle extras = bundle.getBundle(Cobalt.kExtras);
+            if (extras == null) {
+                extras = new Bundle();
+                bundle.putBundle(Cobalt.kExtras, extras);
+            }
+
+            extras.putString(Cobalt.kBars, actionBar.toString());
+            intent.putExtras(bundle);
+
+            ((CobaltActivity) mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((CobaltActivity) mContext).setupBars(actionBar);
+                    ((CobaltActivity) mContext).supportInvalidateOptionsMenu();
+                }
+            });
+        }
+    }
 	protected abstract void onUnhandledMessage(JSONObject message);
 	
 	/*****************************************************************************************************************
 	 * NAVIGATION
 	 ****************************************************************************************************************/
 
-	private void push(String controller, String page, JSONObject data) {
-        Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
-        if (intent != null) {
-            if (data != null) {
-                intent.putExtra(Cobalt.kJSData,data.toString());
+	private void push(JSONObject data) {
+        try {
+            String page = data.getString(Cobalt.kJSPage);
+            String controller = data.optString(Cobalt.kJSController, null);
+            JSONObject bars = data.optJSONObject(Cobalt.kJSBars);
+            JSONObject dataToPush = data.optJSONObject(Cobalt.kJSData);
+
+            Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
+            if (intent != null) {
+                if (bars != null) {
+                    Bundle configuration = intent.getBundleExtra(Cobalt.kExtras);
+                    configuration.putString(Cobalt.kBars, bars.toString());
+                }
+                if (dataToPush != null) {
+                    intent.putExtra(Cobalt.kJSData, dataToPush.toString());
+                }
+
+                mContext.startActivity(intent);
             }
-            mContext.startActivity(intent);
-		}
-		else if (Cobalt.DEBUG) Log.e(Cobalt.TAG,  TAG + " - push: Unable to push " + controller + " controller");
+            else if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG, TAG + " - push: unable to push " + controller + " controller.");
+            }
+        }
+        catch(JSONException exception) {
+            if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG, TAG + " - push: missing mandatory page field.");
+            }
+
+            exception.printStackTrace();
+        }
 	}
 	
 	private void pop() {
@@ -839,29 +1007,49 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         ((CobaltActivity) mContext).popTo(controller, page, data);
     }
 	
-	private void presentModal(String controller, String page, JSONObject dataForModal, String callBackID) {
-		Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
-		
-		if (intent != null) {
-            intent.putExtra(Cobalt.kPushAsModal, true);
-            if (dataForModal != null) {
-                intent.putExtra(Cobalt.kJSData,dataForModal.toString());
-            }
-			mContext.startActivity(intent);
+	private void presentModal(JSONObject data, String callBackID) {
+        try {
+            String page = data.getString(Cobalt.kJSPage);
+            String controller = data.optString(Cobalt.kJSController, null);
+            JSONObject bars = data.optJSONObject(Cobalt.kJSBars);
+            JSONObject dataForModal = data.optJSONObject(Cobalt.kJSData);
 
-			// Sends callback to store current activity & HTML page for dismiss
-			try {
-				JSONObject data = new JSONObject();
-				data.put(Cobalt.kJSPage, getPage());
-				data.put(Cobalt.kJSController, mContext.getClass().getName());
-				sendCallback(callBackID, data);
-			} 
-			catch (JSONException exception) {
-                if (Cobalt.DEBUG) Log.e(Cobalt.TAG,  TAG + " - presentModal: JSONException");
-				exception.printStackTrace();
-			}
-		}
-		else if (Cobalt.DEBUG) Log.e(Cobalt.TAG,  TAG + " - presentModal: Unable to present modal " + controller + " controller");
+            Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
+
+            if (intent != null) {
+                intent.putExtra(Cobalt.kPushAsModal, true);
+                if (bars != null) {
+                    Bundle configuration = intent.getBundleExtra(Cobalt.kExtras);
+                    configuration.putString(Cobalt.kBars, bars.toString());
+                }
+                if (dataForModal != null) {
+                    intent.putExtra(Cobalt.kJSData, dataForModal.toString());
+                }
+
+                mContext.startActivity(intent);
+
+                // Sends callback to store current activity & HTML page for dismiss
+                try {
+                    JSONObject callbackData = new JSONObject();
+                    callbackData.put(Cobalt.kJSPage, getPage());
+                    callbackData.put(Cobalt.kJSController, mContext.getClass().getName());
+                    sendCallback(callBackID, callbackData);
+                }
+                catch (JSONException exception) {
+                    exception.printStackTrace();
+                }
+            }
+            else if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG,  TAG + " - presentModal: unable to present modal " + controller + " controller.");
+            }
+        }
+        catch(JSONException exception) {
+            if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG, TAG + " - presentModal: missing mandatory page field.");
+            }
+
+            exception.printStackTrace();
+        }
 	}
 
 	private void dismissModal(String controller, String page, JSONObject dataForDissmiss) {
@@ -889,19 +1077,45 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		}
 	}
 
-    private void replace(String controller, String page, JSONObject dataForReplace, boolean animated, boolean clearHistory) {
-        Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
-        if (intent != null) {
-            intent.putExtra(Cobalt.kJSAnimated, animated);
-            if (dataForReplace != null) {
-                intent.putExtra(Cobalt.kJSData, dataForReplace.toString());
-            }
-            if (clearHistory) intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+    private void replace(JSONObject data) {
+        try {
+            String page = data.getString(Cobalt.kJSPage);
+            String controller = data.optString(Cobalt.kJSController, null);
+            JSONObject bars = data.optJSONObject(Cobalt.kJSBars);
+            JSONObject dataForReplace = data.optJSONObject(Cobalt.kJSData);
+            boolean animated = data.optBoolean(Cobalt.kJSAnimated);
 
-            mContext.startActivity(intent);
-            ((Activity) mContext).finish();
+			boolean clearHistory = data.optBoolean(Cobalt.kJSClearHistory, false);
+			
+            Intent intent = Cobalt.getInstance(mContext).getIntentForController(controller, page);
+            if (intent != null) {
+                intent.putExtra(Cobalt.kJSAnimated, animated);
+                if (bars != null) {
+                    Bundle configuration = intent.getBundleExtra(Cobalt.kExtras);
+                    configuration.putString(Cobalt.kBars, bars.toString());
+                }
+                if (dataForReplace != null) {
+                    intent.putExtra(Cobalt.kJSData, dataForReplace.toString());
+                }
+
+				if (clearHistory) {
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+				}
+				
+                mContext.startActivity(intent);
+                ((Activity) mContext).finish();
+            }
+            else if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG,  TAG + " - replace: unable to replace " + controller + " controller.");
+            }
         }
-        else if (Cobalt.DEBUG) Log.e(Cobalt.TAG,  TAG + " - push: Unable to push " + controller + " controller");
+        catch(JSONException exception) {
+            if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG, TAG + " - replace: missing mandatory page field.");
+            }
+
+            exception.printStackTrace();
+        }
     }
 	
 	/**

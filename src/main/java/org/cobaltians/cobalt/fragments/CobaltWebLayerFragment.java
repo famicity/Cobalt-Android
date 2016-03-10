@@ -27,10 +27,10 @@
  *
  */
 
-package fr.cobaltians.cobalt.fragments;
+package org.cobaltians.cobalt.fragments;
 
-import fr.cobaltians.cobalt.Cobalt;
-import fr.cobaltians.cobalt.activities.CobaltActivity;
+import org.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.activities.CobaltActivity;
 
 import android.graphics.Color;
 import android.support.v4.app.FragmentTransaction;

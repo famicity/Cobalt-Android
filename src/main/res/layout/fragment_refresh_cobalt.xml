@@ -29,7 +29,7 @@
 
  -->
 
-<fr.cobaltians.cobalt.customviews.CobaltSwipeRefreshLayout
+<org.cobaltians.cobalt.customviews.CobaltSwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/swipe_refresh_container"
     android:layout_width="match_parent"
@@ -41,4 +41,4 @@
         android:layout_height="match_parent"
         android:background="@android:color/transparent" />
 
-</fr.cobaltians.cobalt.customviews.CobaltSwipeRefreshLayout>
+</org.cobaltians.cobalt.customviews.CobaltSwipeRefreshLayout>

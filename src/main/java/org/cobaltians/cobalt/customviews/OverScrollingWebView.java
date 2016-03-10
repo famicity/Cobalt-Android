@@ -1,6 +1,6 @@
 /**
  *
- * CobaltPluginWebContainer
+ * OverScrollingWebView
  * Cobalt
  *
  * The MIT License (MIT)
@@ -27,39 +27,47 @@
  *
  */
 
-package fr.cobaltians.cobalt.plugin;
+package org.cobaltians.cobalt.customviews;
 
-import fr.cobaltians.cobalt.fragments.CobaltFragment;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
 
-import android.app.Activity;
+import android.content.Context;
+import android.util.AttributeSet;
+import android.webkit.WebView;
 
-public final class CobaltPluginWebContainer {
+public class OverScrollingWebView extends WebView {
 
-	/**************************************
-     * MEMBERS
-     **************************************/
-	
-	private final Activity mActivity;
-	private final CobaltFragment mFragment;
-	
-	/****************************************************************************
-     * CONSTRUCTORS
-     ****************************************************************************/
-	
-	public CobaltPluginWebContainer(Activity activity, CobaltFragment fragment) {
-		mActivity = activity;
-		mFragment = fragment;
+	/**
+	 * Fragment handling scroll events
+	 */
+	protected CobaltFragment mScrollListener;
+
+	public OverScrollingWebView(Context context) {
+		super(context);
 	}
 
-	/************************************
-     * GETTERS
-     ************************************/
+	public OverScrollingWebView(Context context, AttributeSet attributes) {
+		super(context, attributes);
+	}
 	
-	public Activity getActivity() {
-		return mActivity;
+	public OverScrollingWebView(Context context, AttributeSet attributes, int defaultStyle) {
+		super(context, attributes, defaultStyle);
 	}
 
-	public CobaltFragment getFragment() {
-		return mFragment;
+	public void setScrollListener(CobaltFragment scrollListener) {
+		mScrollListener = scrollListener;
 	}
+
+	/**
+	 * Notifies listener of scrolling
+	 */
+	@Override
+	protected void onScrollChanged(int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+		super.onScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);
+		
+		if (mScrollListener != null
+			&& IScrollListener.class.isAssignableFrom(mScrollListener.getClass())) {
+			mScrollListener.onOverScrolled(scrollX, scrollY, oldScrollX, oldScrollY);
+		}
+	}	
 }

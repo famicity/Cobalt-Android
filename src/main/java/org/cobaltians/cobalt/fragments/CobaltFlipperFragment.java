@@ -27,15 +27,15 @@
  *
  */
 
-package fr.cobaltians.cobalt.fragments;
+package org.cobaltians.cobalt.fragments;
 
-import fr.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.Cobalt;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
-import fr.cobaltians.cobalt.customviews.GestureWebView;
-import fr.cobaltians.cobalt.customviews.IGestureListener;
+import org.cobaltians.cobalt.customviews.GestureWebView;
+import org.cobaltians.cobalt.customviews.IGestureListener;
 
 /**
  * {@link CobaltFragment} having swipe feature if enabled.

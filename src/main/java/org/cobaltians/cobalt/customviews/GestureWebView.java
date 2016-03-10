@@ -27,14 +27,14 @@
  *
  */
 
-package fr.cobaltians.cobalt.customviews;
+package org.cobaltians.cobalt.customviews;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
-import fr.cobaltians.cobalt.fragments.CobaltFragment;
+import org.cobaltians.cobalt.fragments.CobaltFragment;
 
 public class GestureWebView extends OverScrollingWebView implements OnGestureListener {
 	

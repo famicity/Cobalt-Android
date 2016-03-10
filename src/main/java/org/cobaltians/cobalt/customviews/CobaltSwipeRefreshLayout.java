@@ -1,6 +1,6 @@
-package fr.cobaltians.cobalt.customviews;
+package org.cobaltians.cobalt.customviews;
 
-import fr.cobaltians.cobalt.Cobalt;
+import org.cobaltians.cobalt.Cobalt;
 
 import android.content.Context;
 import android.support.v4.widget.SwipeRefreshLayout;

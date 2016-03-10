@@ -27,7 +27,7 @@
  *
  */
 
-package fr.cobaltians.cobalt.database;
+package org.cobaltians.cobalt.database;
 
 import android.content.ContentValues;
 import android.content.Context;
