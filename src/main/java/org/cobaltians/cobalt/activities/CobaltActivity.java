@@ -483,7 +483,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
             // Visible
             JSONObject visible = configuration.optJSONObject(Cobalt.kBarsVisible);
-            setActionBarVisible(visible);
+            if (visible != null) setActionBarVisible(visible);
 
             // Up
             JSONObject navigationIcon = configuration.optJSONObject(Cobalt.kBarsNavigationIcon);
