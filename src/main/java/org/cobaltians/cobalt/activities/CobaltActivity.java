@@ -46,7 +46,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
@@ -374,7 +373,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
         // TODO: make bars more flexible
         if (topBar == null
-            || bottomBar == null) {
             if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - setupBars: activity does not have an action bar and/or does not contain a bottom bar.");
             return;
         }
@@ -420,15 +418,11 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             try {
                 colorInt = Cobalt.parseColor(color);
                 applyColor = true;
-                topBar.setTitleTextColor(colorInt);
 
                 Drawable overflowIconDrawable = topBar.getOverflowIcon();
-                // TODO: @sebf should never be null
                 if (overflowIconDrawable != null) overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
 
                 Drawable navigationIconDrawable = topBar.getNavigationIcon();
-                // TODO: @sebf should never be null
-                if (navigationIconDrawable != null) navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
             }
             catch (IllegalArgumentException exception) {
                 if (Cobalt.DEBUG) {
@@ -487,37 +481,11 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
             // Up
             JSONObject navigationIcon = configuration.optJSONObject(Cobalt.kBarsNavigationIcon);
-            if (navigationIcon == null) navigationIcon = new JSONObject();
-            boolean enabled = navigationIcon.optBoolean(Cobalt.kNavigationIconEnabled, true);
-            if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(enabled);
-            Drawable navigationIconDrawable = null;
 
-            String icon = navigationIcon.optString(Cobalt.kNavigationIconIcon, null);
-            if (icon != null) {
-                int iconResId = getResourceIdentifier(icon);
-                if (iconResId != 0) {
-                    try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            navigationIconDrawable = getResources().getDrawable(iconResId, null);
-                        }
-                        else {
-                            navigationIconDrawable = getResources().getDrawable(iconResId);
-                        }
-
-                        if (applyColor && navigationIconDrawable != null) {
-                            navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
                         }
                     }
-                    catch(Resources.NotFoundException exception) {
-                        Log.w(Cobalt.TAG, TAG + " - setupBars: " + logo + " resource not found.");
-                        exception.printStackTrace();
                     }
                 }
-                else {
-                    // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
-                    navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
-                }
-                topBar.setNavigationIcon(navigationIconDrawable);
             }
         }
     }
@@ -660,67 +628,31 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         Toolbar topBar = (Toolbar) findViewById(getTopBarId());
         ActionBar actionBar = getSupportActionBar();
         BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
-        //TODO: @sebf But what is the interest of an array here?!?
-        int[] colorInt = new int[1];
-        boolean[] applyColor = new boolean[1];
 
         // TODO: @sebf Contrary to all setBars events catch where I recommend using get + try/catch,
         // here you can use only opt + nullability check because it is optional
         // Same note for all the following
-        if (content.has(Cobalt.kBarsBackgroundColor)) {
             // TODO: apply on overflow popup
-            try {
-                String backgroundColor = content.getString(Cobalt.kBarsBackgroundColor);
                 int backgroundColorInt = Cobalt.parseColor(backgroundColor);
                 if (actionBar != null) actionBar.setBackgroundDrawable(new ColorDrawable(backgroundColorInt));
                 bottomBar.setBackgroundColor(backgroundColorInt);
-            } catch (IllegalArgumentException exception) {
-                if (Cobalt.DEBUG) {
-                    Log.w(Cobalt.TAG, TAG + " - setBarContent: backgroundColor format not supported, use (#)RGB or (#)RRGGBB(AA).");
                 }
-                exception.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
 
-        if (content.has(Cobalt.kBarsColor)) {
-            try {
-                String color = content.getString(Cobalt.kBarsColor);
-                colorInt[0] = Cobalt.parseColor(color);
-                applyColor[0] = true;
-                topBar.setTitleTextColor(colorInt[0]);
 
                 Drawable overflowIconDrawable = topBar.getOverflowIcon();
-                // TODO: @sebf should never be null
                 if (overflowIconDrawable != null) {
-                    overflowIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
                 }
 
                 Drawable navigationIconDrawable = topBar.getNavigationIcon();
-                // TODO: @sebf should never be null
                 if (navigationIconDrawable != null) {
-                    navigationIconDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
                 }
-            } catch (IllegalArgumentException exception) {
-                if (Cobalt.DEBUG) {
-                    Log.w(Cobalt.TAG, TAG + " - setupBars: color format not supported, use (#)RGB or (#)RRGGBB(AA).");
                 }
-                exception.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
 
-        if (content.has(Cobalt.kBarsIcon)) {
-            try {
-                String logo = content.getString(Cobalt.kBarsIcon);
-                if (!logo.equals("")) {
-                    Drawable logoDrawable = null;
 
-                    int logoResId = getResourceIdentifier(logo);
-                    if (logoResId != 0) {
-                        try {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 logoDrawable = getResources().getDrawable(logoResId, null);
                             } else {
@@ -731,21 +663,9 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                                 logoDrawable.setColorFilter(colorInt[0], PorterDuff.Mode.SRC_ATOP);
                             }
                         }
-                        catch(Resources.NotFoundException exception) {
-                            Log.w(Cobalt.TAG, TAG + " - setupBars: " + logo + " resource not found.");
-                            exception.printStackTrace();
-                        }
                     } else {
-                        // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
-                        logoDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), logo, colorInt[0]);
                     }
-                    topBar.setLogo(logoDrawable);
-                    if (actionBar != null) actionBar.setDisplayShowHomeEnabled(true);
-                } else {
-                    if (actionBar != null) actionBar.setDisplayShowHomeEnabled(false);
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
 
@@ -777,7 +697,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                         }
                     } else {
                         // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
-                        navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), icon, colorInt[0]);
                     }
                     topBar.setNavigationIcon(navigationIconDrawable);
                 }
@@ -802,10 +721,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
     public void setActionItemVisible(String actionName, boolean visible) {
         MenuItem menuItem = mMenuItemByNameMap.get(actionName);
-        // TODO: @sebf always check nullability to avoid crashes!
         if (menuItem != null) {
-            if (visible) {
-                // TODO: @sebf Why check if visible or not before set? Same for enabled below
                 if (!menuItem.isVisible()) {
                     menuItem.setVisible(true);
                 }
@@ -817,9 +733,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
     public void setActionItemEnabled(String actionName, boolean enabled) {
         MenuItem menuItem = mMenuItemByNameMap.get(actionName);
-        // TODO: @sebf always check nullability to avoid crashes!
         if (menuItem != null) {
-            if (enabled) {
                 if (!menuItem.isEnabled()) {
                     menuItem.setEnabled(true);
                 }
