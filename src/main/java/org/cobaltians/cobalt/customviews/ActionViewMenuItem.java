@@ -256,7 +256,7 @@ public class ActionViewMenuItem extends RelativeLayout {
         String icon = mAction.optString(Cobalt.kActionIcon, null);
         String color = mAction.optString(Cobalt.kActionColor, mColor);
 
-        if (androidIcon != null || icon != null) {
+        if ((androidIcon != null || icon != null) && mImageButton != null) {
             int idResource;
             if (androidIcon != null)  idResource = getResource(androidIcon);
             else idResource = getResource(icon);
@@ -288,7 +288,7 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, iconColor));
             }
         }
-        else if (title != null) {
+        else if (title != null && mButton != null) {
             mButton.setText(title);
 
             // TODO: @sebf cannot happen
@@ -313,7 +313,10 @@ public class ActionViewMenuItem extends RelativeLayout {
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        if (enabled) {
+        if (mImageButton != null) {
+            mImageButton.setEnabled(enabled);
+        }
+        /*if (enabled) {
             // TODO: @sebf Why check if visible or not before set?
             if (!mImageButton.isEnabled()) {
                 mImageButton.setEnabled(true);
@@ -321,6 +324,6 @@ public class ActionViewMenuItem extends RelativeLayout {
         }
         else if (mImageButton.isEnabled()) {
             mImageButton.setEnabled(false);
-        }
+        }*/
     }
 }
