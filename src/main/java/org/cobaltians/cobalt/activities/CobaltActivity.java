@@ -77,7 +77,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     private JSONObject mDataNavigation;
 
     // Pop
-    private static ArrayList<Activity> sActivitiesArrayList = new ArrayList<>();
+    protected static ArrayList<Activity> sActivitiesArrayList = new ArrayList<>();
 
     // Modal
     private boolean mWasPushedAsModal;
