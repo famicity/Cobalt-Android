@@ -1,10 +1,10 @@
 package org.cobaltians.cobalt.customviews;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -24,6 +24,8 @@ import org.cobaltians.cobalt.R;
 import org.cobaltians.cobalt.activities.CobaltActivity;
 import org.cobaltians.cobalt.font.CobaltFontManager;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by sebastienfamel on 10/12/15.
  */
@@ -33,7 +35,7 @@ public class ActionViewMenuItem extends RelativeLayout {
 
     protected String mName;
     protected JSONObject mAction;
-    protected String mColor;
+    protected String mBarsColor;
     protected ActionViewMenuItemListener mListener;
     protected Context mContext;
 
@@ -64,23 +66,19 @@ public class ActionViewMenuItem extends RelativeLayout {
         init();
     }
 
-    public ActionViewMenuItem(Context context, JSONObject action, String barsColor/*, ActionViewMenuItemListener listener*/) {
+    public ActionViewMenuItem(Context context, JSONObject action, String barsColor) {
         super(context);
         mContext = context;
         mInflater = LayoutInflater.from(mContext);
-        try {
-            // TODO: @sebf not useful, you already save the action
-            this.mName = action.getString(Cobalt.kActionName);
-            this.mAction = action;
-            // TODO: @sebf rename mBarsColor for better understanding
-            this.mColor = barsColor;
-            // TODO: @sebf prefer pass the listener apart with a WeakReference
-            this.mListener = (ActionViewMenuItemListener) context;
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        this.mAction = action;
+        this.mBarsColor = barsColor;
+
         init();
+    }
+
+    public void setActionViewMenuItemListener(WeakReference<CobaltActivity> weakActivity) {
+        mListener = weakActivity.get();
     }
 
     protected void init() {
@@ -89,7 +87,7 @@ public class ActionViewMenuItem extends RelativeLayout {
             String title = mAction.getString(Cobalt.kActionTitle);
             String icon = mAction.optString(Cobalt.kActionIcon, null);               // must be "fontKey character"
             String androidIcon = mAction.optString(Cobalt.kActionAndroidIcon, null);
-            String color = mAction.optString(Cobalt.kActionColor, mColor);             // default: same as bar color
+            String color = mAction.optString(Cobalt.kActionColor, mBarsColor);             // default: same as bar color
             boolean visible = mAction.optBoolean(Cobalt.kActionVisible, true);
             boolean enabled = mAction.optBoolean(Cobalt.kActionEnabled, true);
             String badge = mAction.optString(Cobalt.kActionBadge, null);             // if "", hide it
@@ -117,7 +115,7 @@ public class ActionViewMenuItem extends RelativeLayout {
                     }
                 }
                 else {
-                    int iconColor = 0;
+                    int iconColor = CobaltFontManager.DEFAULT_COLOR;
 
                     try {
                         iconColor = Cobalt.parseColor(color);
@@ -130,17 +128,12 @@ public class ActionViewMenuItem extends RelativeLayout {
                         exception.printStackTrace();
                     }
 
-                    // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
                     mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, iconColor));
                 }
 
                 mImageButton.setEnabled(enabled);
 
-                // TODO: @sebf you could use a ternary expression here ;)
-                if (visible) {
-                    mImageButton.setVisibility(VISIBLE);
-                }
-                else mImageButton.setVisibility(GONE);
+                mImageButton.setVisibility(visible ? VISIBLE : GONE);
 
                 if (badge != null && badge.length()>0) {
                     mBadgeTv.setText(badge);
@@ -157,7 +150,12 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mImageButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ((CobaltActivity)mContext).onPressed(mName);
+                        try {
+                            String name  = mAction.getString(Cobalt.kActionName);
+                            ((CobaltActivity)mContext).onPressed(name);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
                 // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
@@ -183,7 +181,12 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ((CobaltActivity) mContext).onPressed(mName);
+                        try {
+                            String name  = mAction.getString(Cobalt.kActionName);
+                            ((CobaltActivity) mContext).onPressed(name);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
                 // TODO: apply color for items in overflow popup
@@ -254,7 +257,7 @@ public class ActionViewMenuItem extends RelativeLayout {
         String androidIcon = mAction.optString(Cobalt.kActionAndroidIcon, null);
         String title = mAction.optString(Cobalt.kActionTitle, null);
         String icon = mAction.optString(Cobalt.kActionIcon, null);
-        String color = mAction.optString(Cobalt.kActionColor, mColor);
+        String color = mAction.optString(Cobalt.kActionColor, mBarsColor);
 
         if ((androidIcon != null || icon != null) && mImageButton != null) {
             int idResource;
