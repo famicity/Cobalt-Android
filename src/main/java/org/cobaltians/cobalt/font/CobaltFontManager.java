@@ -33,6 +33,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -65,6 +66,7 @@ public class CobaltFontManager {
     private static Context mContext;
     // TAG
     public static final String TAG = CobaltFontManager.class.getSimpleName();
+    public static final int DEFAULT_COLOR = Color.BLACK;
 
     /**
      * Initializes and returns a font drawable with a font icon identifier, color, text size and padding

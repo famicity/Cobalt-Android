@@ -57,6 +57,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -99,7 +100,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 		super.onCreate(savedInstanceState);
 
 		setContentView(getLayoutToInflate());
-
         sActivitiesArrayList.add(this);
 
         Bundle bundle = getIntent().getExtras();
@@ -412,22 +412,13 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             }
 
             // Color (default: system)
-            int colorInt = 0;
+            int colorInt = CobaltFontManager.DEFAULT_COLOR;
             boolean applyColor = false;
             String color = configuration.optString(Cobalt.kBarsColor, null);
             if (color == null) color = getDefaultActionBarTextColor();
             try {
                 colorInt = Cobalt.parseColor(color);
                 applyColor = true;
-                /*topBar.setTitleTextColor(colorInt);//move
-
-                Drawable overflowIconDrawable = topBar.getOverflowIcon();
-                // should never be null but sometimes....
-                if (overflowIconDrawable != null) overflowIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);
-
-                Drawable navigationIconDrawable = topBar.getNavigationIcon();
-                // should never be null but sometimes....
-                if (navigationIconDrawable != null) navigationIconDrawable.setColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP);*/
             }
             catch (IllegalArgumentException exception) {
                 if (Cobalt.DEBUG) {
@@ -435,7 +426,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 }
                 exception.printStackTrace();
             }
-
 
             // Logo
             String logo = configuration.optString(Cobalt.kBarsIcon, null);
@@ -461,7 +451,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                     }
                 }
                 else {
-                    // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
                     logoDrawable = CobaltFontManager.getCobaltFontDrawable(this, logo, colorInt);
                 }
                 topBar.setLogo(logoDrawable);
@@ -509,12 +498,10 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                         }
                     }
                     else {
-                        // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
                         navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(this, icon, colorInt);
                     }
                     topBar.setNavigationIcon(navigationIconDrawable);
                 }
-
             }
 
             if (applyColor) {
@@ -602,13 +589,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 exception.printStackTrace();
             }
         }
-
-        /*if (menuItemsAddedToBottom > 0) {
-            MenuItem spaceMenuItem = bottomMenu.add(Menu.NONE, Menu.NONE, menuItemsAddedToBottom, "");
-            MenuItemCompat.setShowAsAction(spaceMenuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
-            spaceMenuItem.setVisible(true);
-            spaceMenuItem.setEnabled(false);
-        }*/
     }
 
     protected void addGroup(Menu menu, int order, JSONArray actions, int actionId, String position, String color) {
@@ -669,7 +649,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         Toolbar topBar = (Toolbar) findViewById(getTopBarId());
         ActionBar actionBar = getSupportActionBar();
         BottomBar bottomBar = (BottomBar) findViewById(getBottomBarId());
-        int colorInt = 0;
+        int colorInt = CobaltFontManager.DEFAULT_COLOR;
         boolean applyColor = false;
 
         try {
@@ -736,7 +716,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                     exception.printStackTrace();
                 }
             } else {
-                // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
                 logoDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), logo, colorInt);
             }
             topBar.setLogo(logoDrawable);
@@ -772,7 +751,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                             exception.printStackTrace();
                         }
                     } else {
-                        // TODO: Declare default font color in getCobaltFontDrawable method of CobaltFontManager (cleaner than pass 0 -> black)
                         navigationIconDrawable = CobaltFontManager.getCobaltFontDrawable(getApplicationContext(), icon, colorInt);
                     }
                     topBar.setNavigationIcon(navigationIconDrawable);
@@ -800,13 +778,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         MenuItem menuItem = mMenuItemByNameMap.get(actionName);
         if (menuItem != null) {
             menuItem.setVisible(visible);
-            /*if (visible) {
-                if (!menuItem.isVisible()) {
-                    menuItem.setVisible(true);
-                }
-            } else if (menuItem.isVisible()) {
-                menuItem.setVisible(false);
-            }*/
         }
     }
 
@@ -814,13 +785,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         MenuItem menuItem = mMenuItemByNameMap.get(actionName);
         if (menuItem != null) {
             menuItem.setEnabled(enabled);
-            /*if (enabled) {
-                if (!menuItem.isEnabled()) {
-                    menuItem.setEnabled(true);
-                }
-            } else if (menuItem.isEnabled()) {
-                menuItem.setEnabled(false);
-            }*/
         }
 
         if (mMenuItemsHashMap.containsKey(actionName)) {
@@ -838,19 +802,19 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
             final MenuItem menuItem = menu.add(Menu.NONE, id, order, title);
 
-            // TODO: check for API 8 -> 10
-            int showAsAction = MenuItem.SHOW_AS_ACTION_IF_ROOM;
+            int showAsAction = MenuItemCompat.SHOW_AS_ACTION_IF_ROOM;
             switch(position) {
                 case Cobalt.kPositionBottom:
-                    showAsAction = MenuItem.SHOW_AS_ACTION_ALWAYS;
+                    showAsAction = MenuItemCompat.SHOW_AS_ACTION_ALWAYS;
                     break;
                 case Cobalt.kPositionOverflow:
-                    showAsAction = MenuItem.SHOW_AS_ACTION_NEVER;
+                    showAsAction = MenuItemCompat.SHOW_AS_ACTION_NEVER;
                     break;
             }
             MenuItemCompat.setShowAsAction(menuItem, showAsAction);
 
             ActionViewMenuItem actionView = new ActionViewMenuItem(this, action, barsColor);
+            actionView.setActionViewMenuItemListener(new WeakReference<>(this));
 
             MenuItemCompat.setActionView(menuItem, actionView);
             menuItem.setVisible(visible);
@@ -872,8 +836,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             exception.printStackTrace();
         }
     }
-
-
 
     public int getResourceIdentifier(String resource) {
         int resId = 0;
@@ -1019,7 +981,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 }
 
                 if (popToControllerFound) {
-                    while (popToControllerIndex + 1 <= sActivitiesArrayList.size()) {
+                    while (popToControllerIndex + 1 < sActivitiesArrayList.size()) {
                         sActivitiesArrayList.get(popToControllerIndex + 1).finish();
                     }
                 }
@@ -1053,6 +1015,12 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     public void setDataNavigation(JSONObject data) {
         this.mDataNavigation = data;
     }
+
+    /***********************************************************************************************
+     *
+     * ACTION VIEW MENU ITEM
+     *
+     **********************************************************************************************/
 
     @Override
     public void onPressed(String name) {

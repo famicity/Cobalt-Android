@@ -33,22 +33,24 @@ import org.cobaltians.cobalt.fragments.CobaltFragment;
 
 import android.app.Activity;
 
+import java.lang.ref.WeakReference;
+
 public final class CobaltPluginWebContainer {
 
 	/**************************************
      * MEMBERS
      **************************************/
 	
-	private final Activity mActivity;
-	private final CobaltFragment mFragment;
+	private final WeakReference <Activity> mActivity;
+	private final WeakReference <CobaltFragment> mFragment;
 	
 	/****************************************************************************
      * CONSTRUCTORS
      ****************************************************************************/
 	
 	public CobaltPluginWebContainer(Activity activity, CobaltFragment fragment) {
-		mActivity = activity;
-		mFragment = fragment;
+		mActivity = new WeakReference<>(activity);
+		mFragment = new WeakReference<>(fragment);
 	}
 
 	/************************************
@@ -56,10 +58,10 @@ public final class CobaltPluginWebContainer {
      ************************************/
 	
 	public Activity getActivity() {
-		return mActivity;
+		return mActivity.get();
 	}
 
 	public CobaltFragment getFragment() {
-		return mFragment;
+		return mFragment.get();
 	}
 }
