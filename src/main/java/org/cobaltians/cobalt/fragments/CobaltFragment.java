@@ -67,9 +67,12 @@ import java.util.Calendar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkView;
+import org.xwalk.core.internal.XWalkPreferencesInternal;
+import org.xwalk.core.internal.XWalkSettingsInternal;
 
 /**
  * {@link Fragment} allowing interactions between native and Web
@@ -195,7 +198,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     @Override
 	public void onDestroy() {
 		super.onDestroy();
-		
+		// TODO CROSSWALK see if need to call ondestroy for mWebview
+		// mWebView.onDestroy();
 		mPluginManager.onFragmentDestroyed(mContext, this);
 	}
     
@@ -271,22 +275,27 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) mWebView.setLayerType(View.LAYER_TYPE_HARDWARE ,null);
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD) mWebView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
-        // TODO CROSSWALK find setScrollListener
-        // mWebView.setScrollListener(this);
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
 
         // Enables JS
         XWalkSettings webSettings = mWebView.getSettings();
-        // TODO CROSSWALK find setJavaScriptEnabled
+        Log.d(TAG, " CROSSWALK userAgent = "+webSettings.getUserAgentString());
+        // TODO CROSSWALK find setJavaScriptEnabled ?
+        // SebF : in Crosswalk is enabled by default in XWalkSettingsInternal
         //webSettings.setJavaScriptEnabled(true);
 
         // Enables and setups JS local storage
         // TODO CROSSWALK find setDomStorageEnabled
+        // sebF : enabled by default in XWalkSettingsInternal
         //webSettings.setDomStorageEnabled(true);
+
         // TODO CROSSWALK find setDatabaseEnabled
+        // sebF : enabled by default in XWalkSettingsInternal
         //webSettings.setDatabaseEnabled(true);
+
         //@deprecated since API 19. But calling this method have simply no effect for API 19+
         // TODO CROSSWALK find setDatabasePath
+        //TODO: bring it back when it's ready in the XWalk.
         //webSettings.setDatabasePath(mContext.getFilesDir().getParentFile().getPath() + "/databases/");
 
         // Enables cross-domain calls for Ajax
@@ -340,6 +349,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
             // TODO: see how to restrict only to local files
             // TODO CROSSWALK find setAllowUniversalAccessFromFileURLs
             //mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
         }
     }
 
