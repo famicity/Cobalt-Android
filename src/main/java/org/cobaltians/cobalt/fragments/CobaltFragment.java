@@ -55,7 +55,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.*;
-import android.webkit.JavascriptInterface;
+import org.xwalk.core.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;

@@ -33,7 +33,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.webkit.JavascriptInterface;
+import org.xwalk.core.JavascriptInterface;
 import junit.framework.Assert;
 
 /**
