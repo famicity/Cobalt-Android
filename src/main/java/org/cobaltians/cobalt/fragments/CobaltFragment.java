@@ -67,6 +67,12 @@ import java.util.Calendar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xwalk.core.XWalkPreferences;
+import org.xwalk.core.XWalkResourceClient;
+import org.xwalk.core.XWalkSettings;
+import org.xwalk.core.XWalkView;
+import org.xwalk.core.internal.XWalkPreferencesInternal;
+import org.xwalk.core.internal.XWalkSettingsInternal;
 
 /**
  * {@link Fragment} allowing interactions between native and Web
@@ -86,7 +92,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
     protected ViewGroup mWebViewContainer;
 
-	protected OverScrollingWebView mWebView;
+	protected XWalkView mWebView;
     protected CobaltSwipeRefreshLayout mSwipeRefreshLayout;
 
 	protected Handler mHandler = new Handler();
@@ -159,12 +165,25 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	}
 
     @Override
+    public void onPause() {
+        super.onPause();
+        if (mWebView != null) {
+            mWebView.resumeTimers();
+            mWebView.onHide();
+        }
+    }
+
+    @Override
     public void onResume() {
         mAllowCommit = true;
         super.onResume();
         JSONObject data = ((CobaltActivity) mContext).getDataNavigation();
         sendEvent(Cobalt.JSEventOnPageShown, data, null);
         ((CobaltActivity) mContext).setDataNavigation(null);
+        if (mWebView != null) {
+            mWebView.resumeTimers();
+            mWebView.onShow();
+        }
     }
 	
 	@Override
@@ -192,7 +211,10 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     @Override
 	public void onDestroy() {
 		super.onDestroy();
-		
+		// TODO CROSSWALK see if need to call ondestroy for mWebview
+		if (mWebView != null) {
+            mWebView.onDestroy();
+        }
 		mPluginManager.onFragmentDestroyed(mContext, this);
 	}
     
@@ -249,7 +271,9 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 */
 	protected void addWebView() {
         if (mWebView == null) {
-            mWebView = new OverScrollingWebView(mContext);
+            mWebView = new XWalkView(mContext);
+            XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+
             setWebViewSettings(this);
 
             if (isPullToRefreshActive()
@@ -268,18 +292,28 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) mWebView.setLayerType(View.LAYER_TYPE_HARDWARE ,null);
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD) mWebView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
-        mWebView.setScrollListener(this);
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
 
         // Enables JS
-        WebSettings webSettings = mWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
+        XWalkSettings webSettings = mWebView.getSettings();
+        Log.d(TAG, " CROSSWALK userAgent = "+webSettings.getUserAgentString());
+        // TODO CROSSWALK find setJavaScriptEnabled ?
+        // SebF : in Crosswalk is enabled by default in XWalkSettingsInternal
+        //webSettings.setJavaScriptEnabled(true);
 
         // Enables and setups JS local storage
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setDatabaseEnabled(true);
+        // TODO CROSSWALK find setDomStorageEnabled
+        // sebF : enabled by default in XWalkSettingsInternal
+        //webSettings.setDomStorageEnabled(true);
+
+        // TODO CROSSWALK find setDatabaseEnabled
+        // sebF : enabled by default in XWalkSettingsInternal
+        //webSettings.setDatabaseEnabled(true);
+
         //@deprecated since API 19. But calling this method have simply no effect for API 19+
-        webSettings.setDatabasePath(mContext.getFilesDir().getParentFile().getPath() + "/databases/");
+        // TODO CROSSWALK find setDatabasePath
+        //TODO: bring it back when it's ready in the XWalk.
+        //webSettings.setDatabasePath(mContext.getFilesDir().getParentFile().getPath() + "/databases/");
 
         // Enables cross-domain calls for Ajax
         allowAjax();
@@ -315,22 +349,24 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         mWebView.addJavascriptInterface(javascriptInterface, "Android");
         mWebView.addJavascriptInterface(new LocalStorageJavaScriptInterface(mContext), "LocalStorage");
 
-        WebViewClient webViewClient = new WebViewClient() {
+        XWalkResourceClient webViewClient = new XWalkResourceClient(mWebView) {
 
             @Override
-            public void onPageFinished(WebView view, String url) {
+            public void onLoadFinished(XWalkView view, String url) {
                 executeWaitingCalls();
             }
         };
 
-        mWebView.setWebViewClient(webViewClient);
+        mWebView.setResourceClient(webViewClient);
     }
 
     @SuppressLint("NewApi")
 	private void allowAjax() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             // TODO: see how to restrict only to local files
-            mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+            // TODO CROSSWALK find setAllowUniversalAccessFromFileURLs
+            //mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
         }
     }
 
@@ -348,7 +384,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
      * @warning All application HTML files should be found in the same subfolder in ressource path
      */
     private void loadFileFromAssets(String file) {
-        mWebView.loadUrl(Cobalt.getInstance(mContext).getResourcePath() + file);
+        mWebView.load(Cobalt.getInstance(mContext).getResourcePath() + file, null);
     }
 
 	/**
@@ -387,7 +423,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 }
 
                                 String url = "javascript:cobalt.execute(" + script + ");";
-                                mWebView.loadUrl(url);
+                                mWebView.load(url, null);
                             }
                         });
                     }
@@ -1427,12 +1463,13 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	@Override
 	public void onOverScrolled(int scrollX, int scrollY, int oldscrollX, int oldscrollY) {
         int height = mWebView.getHeight();
-        long contentHeight = (long) Math.floor(mWebView.getContentHeight() * mContext.getResources().getDisplayMetrics().density);
+        //TODO CROSSWALK NO method getContentHeight in XWalkView
+        //long contentHeight = (long) Math.floor(mWebView.getContentHeight() * mContext.getResources().getDisplayMetrics().density);
         
 		if (isInfiniteScrollActive()
             && ! mIsInfiniteScrollRefreshing
             && scrollY >= oldscrollY
-            && scrollY + height >= contentHeight - height * getInfiniteScrollOffset() / 100) {
+            /*&& scrollY + height >= contentHeight - height * getInfiniteScrollOffset() / 100*/) {
 			infiniteScrollRefresh();
 		}
 	}

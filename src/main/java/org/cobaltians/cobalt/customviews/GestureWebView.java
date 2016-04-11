@@ -29,14 +29,16 @@
 
 package org.cobaltians.cobalt.customviews;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import org.cobaltians.cobalt.fragments.CobaltFragment;
+import org.xwalk.core.XWalkView;
 
-public class GestureWebView extends OverScrollingWebView implements OnGestureListener {
+public class GestureWebView extends XWalkView implements OnGestureListener {
 	
 	/**
 	 * Fragment handling gesture events
@@ -60,9 +62,9 @@ public class GestureWebView extends OverScrollingWebView implements OnGestureLis
 		super(context, attributes);
 		setGestureDetector(context);
 	}
-	
-	public GestureWebView(Context context, AttributeSet attributes,int defaultStyle) {
-		super(context, attributes, defaultStyle);
+
+	public GestureWebView(Context context, Activity activity) {
+		super(context, activity);
 		setGestureDetector(context);
 	}
 	

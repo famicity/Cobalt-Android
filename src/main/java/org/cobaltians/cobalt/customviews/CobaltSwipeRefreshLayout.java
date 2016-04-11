@@ -1,6 +1,7 @@
 package org.cobaltians.cobalt.customviews;
 
 import org.cobaltians.cobalt.Cobalt;
+import org.xwalk.core.XWalkView;
 
 import android.content.Context;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -16,7 +17,7 @@ public class CobaltSwipeRefreshLayout extends SwipeRefreshLayout {
     private static final String TAG = CobaltSwipeRefreshLayout.class.getSimpleName();
     private static final int Y_SCROLL_BUFFER = 5;
 
-    private OverScrollingWebView mWebView;
+    private XWalkView mWebView;
 
     public CobaltSwipeRefreshLayout(Context context) {
         super(context);
@@ -26,7 +27,7 @@ public class CobaltSwipeRefreshLayout extends SwipeRefreshLayout {
         super(context, attrs);
     }
 
-    public void setWebView(OverScrollingWebView webView) {
+    public void setWebView(XWalkView webView) {
        mWebView = webView;
     }
 
