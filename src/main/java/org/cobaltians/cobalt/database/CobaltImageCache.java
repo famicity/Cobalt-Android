@@ -83,11 +83,17 @@ public class CobaltImageCache {
             Bitmap bitmap = mMapImages.get(id);
 
             if (bitmap != null) {
-                // compressing the image
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-                // encode image
-                encodeImage = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+                int quality = 100;
+                //need this loop cause with some new device the length of url exceed 2097152 characters and fail upload
+                do {
+                    // compressing the image
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
+                    // encode image
+                    encodeImage = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+                    quality -= 1;
+                }
+                while (encodeImage.length() > 2097152);
             }
         }
         else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - toBase64: id could not be null!");
