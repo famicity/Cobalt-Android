@@ -105,7 +105,7 @@ public class ActionViewMenuItem extends RelativeLayout {
 
                 if (idResource != 0) {
                     try {
-                        //TODO: @sebf where is the color applied?
+                        mImageButton.setColorFilter(Cobalt.parseColor(color));
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             mImageButton.setImageDrawable(mContext.getDrawable(idResource));
                         } else
