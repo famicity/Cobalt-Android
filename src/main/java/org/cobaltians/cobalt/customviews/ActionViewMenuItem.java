@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -178,6 +179,8 @@ public class ActionViewMenuItem extends RelativeLayout {
                     mButton.setTextColor(textColor);
                 }
                 mButton.setEnabled(enabled);
+                mButton.setVisibility(visible ? VISIBLE : GONE);
+                mButton.setBackgroundColor(Color.TRANSPARENT);
                 mButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
