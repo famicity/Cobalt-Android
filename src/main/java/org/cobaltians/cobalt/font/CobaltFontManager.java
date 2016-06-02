@@ -115,6 +115,16 @@ public class CobaltFontManager {
     }
 
     /**
+     * Initializes and returns a font drawable with a font icon identifier, color, text size and padding
+     * @param context the activity context
+     * @param identifier the font icon identifier as "font-key font-icon" (i.e.: fa fa-mobile)
+     * @return a Drawable or null
+     */
+    public static CobaltAbstractFontDrawable getCobaltFontDrawable(Context context, String identifier) {
+        return getCobaltFontDrawable(context, identifier, DEFAULT_COLOR);
+    }
+
+    /**
      * Returns font key:class tuples as HashMap
      * @return font key:class tuples as HashMap
      */

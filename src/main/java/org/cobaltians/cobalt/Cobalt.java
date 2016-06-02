@@ -510,29 +510,39 @@ public class Cobalt {
             throw new IllegalArgumentException();
         }
 
-        if (! color.startsWith("#")) {
+        if (!color.startsWith("#")) {
             color = "#" + color;
         }
 
-        switch(color.length()) {
-            case 4:
+        switch (color.length()) {
+            case 4: {
                 // #RGB -> #RRGGBB
                 String red = color.substring(1, 2);
                 String green = color.substring(2, 3);
                 String blue = color.substring(3, 4);
                 color = "#" + red + red + green + green + blue + blue;
                 break;
+            }
             case 7:
                 // #RRGGBB
                 break;
-            case 9:
+            case 5: {
+                // #ARGB -> #RRGGBB
+                String transparency = color.substring(1, 2);
+                String red = color.substring(2, 3);
+                String green = color.substring(3, 4);
+                String blue = color.substring(4, 5);
+                color = "#" + transparency + transparency + red + red + green + green + blue + blue;
+                break;
+            }
+            case 9: {
                 // #RRGGBBAA -> #AARRGGBB
                 color = "#" + color.substring(7, 9) + color.substring(1, 7);
                 break;
+            }
             default:
                 throw new IllegalArgumentException();
         }
-
         return Color.parseColor(color);
     }
 }
