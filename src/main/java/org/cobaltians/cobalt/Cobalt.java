@@ -64,6 +64,9 @@ public class Cobalt {
     // INFINITE SCROLL
     public static final int INFINITE_SCROLL_OFFSET_DEFAULT_VALUE = 0;
 
+    // BACKGROUND COLOR VIEW
+    public static final String BACKGROUND_COLOR_DEFAULT = "#FFFFFF";
+
     /**********************************************************************************************
      * CONFIGURATION FILE
      **********************************************************************************************/
@@ -78,6 +81,7 @@ public class Cobalt {
     public final static String kBarsVisible = "visible";
     public final static String kVisibleTop = "top";
     public final static String kVisibleBottom = "bottom";
+    public final static String kBackground = "background";
     public final static String kBarsBackgroundColor = "backgroundColor";
     public final static String kBarsColor = "color";
     public final static String kBarsTitle = "title";
@@ -366,6 +370,7 @@ public class Cobalt {
             boolean enablePullToRefresh;
             boolean enableInfiniteScroll;
             int infiniteScrollOffset;
+            String backgroundColor;
             // TODO: add enableGesture
 
             if (controller != null
@@ -375,6 +380,7 @@ public class Cobalt {
                 enablePullToRefresh = controllers.getJSONObject(controller).optBoolean(kPullToRefresh);
                 enableInfiniteScroll = controllers.getJSONObject(controller).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(controller).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
+                backgroundColor = controllers.getJSONObject(controller).optString(kBackground, BACKGROUND_COLOR_DEFAULT);
             }
             else {
                 activity = controllers.getJSONObject(kDefaultController).getString(kAndroid);
@@ -382,6 +388,7 @@ public class Cobalt {
                 enablePullToRefresh = controllers.getJSONObject(kDefaultController).optBoolean(kPullToRefresh);
                 enableInfiniteScroll = controllers.getJSONObject(kDefaultController).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(kDefaultController).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
+                backgroundColor = controllers.getJSONObject(kDefaultController).optString(kBackground, BACKGROUND_COLOR_DEFAULT);
             }
 
             if (activity.substring(0,1).equals(".")) activity = mContext.getPackageName() + activity;
@@ -391,6 +398,7 @@ public class Cobalt {
             bundle.putBoolean(kPullToRefresh, enablePullToRefresh);
             bundle.putBoolean(kInfiniteScroll, enableInfiniteScroll);
             bundle.putInt(kInfiniteScrollOffset, infiniteScrollOffset);
+            bundle.putString(kBackground, backgroundColor);
 
             return bundle;
         }

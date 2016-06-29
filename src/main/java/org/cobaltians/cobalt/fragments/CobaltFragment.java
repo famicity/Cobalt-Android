@@ -265,11 +265,16 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	}
 
     protected void setWebViewSettings(CobaltFragment javascriptInterface) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) mWebView.setLayerType(View.LAYER_TYPE_HARDWARE ,null);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            // Fix bug #123 on android 4.2.2 for render refresh view with layer type software
+            mWebView.setLayerType(Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1 ? View.LAYER_TYPE_SOFTWARE : View.LAYER_TYPE_HARDWARE, null);
+        }
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD) mWebView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         mWebView.setScrollListener(this);
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
+
+        mWebView.setBackgroundColor(getBackgroundColor());
 
         // Enables JS
         WebSettings webSettings = mWebView.getSettings();
@@ -322,11 +327,6 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 executeWaitingCalls();
             }
         };
-
-        // Fix bug #123 on android 4.2.2 for render refresh view
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
 
         mWebView.setWebViewClient(webViewClient);
     }
@@ -1485,6 +1485,17 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         else {
             return Cobalt.INFINITE_SCROLL_OFFSET_DEFAULT_VALUE;
         }
+    }
+
+    private int getBackgroundColor() {
+        Bundle args = getArguments();
+        if (args != null) {
+            String color = args.getString(Cobalt.kBackground);
+            if (color != null) {
+                return Cobalt.parseColor(color);
+            }
+        }
+        return Cobalt.parseColor(Cobalt.BACKGROUND_COLOR_DEFAULT);
     }
 
     protected String getPage() {
