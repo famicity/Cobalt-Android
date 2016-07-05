@@ -56,6 +56,8 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -137,6 +139,30 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
         else {
             setupBars(null);
+        }
+
+        if (extras.containsKey(Cobalt.kStatusBar)) {
+            Window window = getWindow();
+
+            try {
+                JSONObject statusBar = new JSONObject(extras.getString(Cobalt.kStatusBar));
+                boolean visible =  statusBar.optBoolean(Cobalt.kVisible, true);
+                if (!visible) {
+                    window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    //see why it's necessary clear and add flag
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+                    String colorBg = statusBar.optString(Cobalt.kAndroidBackgroundColor,"#000000");
+                    window.setStatusBarColor(Cobalt.parseColor(colorBg));
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
 
 		if (savedInstanceState == null) {
@@ -844,7 +870,32 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             if (resource == null || resource.length() == 0) {
                 throw new IllegalArgumentException();
             }
+/*
+if (!imageLink.contains(":")) {
+            return this.getResources().getIdentifier(imageLink,"drawable", mContext.getPackageName());
+            resId = getResources().getIdentifier(resourceName = imageLink, "drawable", packageName);
 
+        }
+        else {
+            try {
+
+                String [] splitLink = imageLink.split(":");
+                            String[] resourceSplit = resource.split(":");
+                String packName = splitLink[0];
+                            packageName = resourceSplit[0].length() != 0 ? resourceSplit[0] : getPackageName();
+
+                String drawableName = splitLink[1];
+                            resourceName = resourceSplit[1];
+                PackageManager manager = mContext.getPackageManager();
+                Resources apkResource = manager.getResourcesForApplication(packName);
+
+                return apkResource.getIdentifier(drawableName, "drawable", packName);
+
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+ */
             String[] resourceSplit = resource.split(":");
             String packageName, resourceName;
             switch(resourceSplit.length) {

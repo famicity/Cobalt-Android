@@ -78,6 +78,8 @@ public class Cobalt {
     private final static String kDefaultController = "default";
 
     public final static String kBars = "bars";
+    public final static String kStatusBar = "statusBar";
+    public final static String kAndroidBackgroundColor = "androidBackgroundColor";
     public final static String kBarsVisible = "visible";
     public final static String kVisibleTop = "top";
     public final static String kVisibleBottom = "bottom";
@@ -371,6 +373,7 @@ public class Cobalt {
             boolean enableInfiniteScroll;
             int infiniteScrollOffset;
             String backgroundColor;
+            JSONObject statusBar;
             // TODO: add enableGesture
 
             if (controller != null
@@ -381,6 +384,7 @@ public class Cobalt {
                 enableInfiniteScroll = controllers.getJSONObject(controller).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(controller).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
                 backgroundColor = controllers.getJSONObject(controller).optString(kBackground, BACKGROUND_COLOR_DEFAULT);
+                statusBar = controllers.getJSONObject(controller).optJSONObject(kStatusBar);
             }
             else {
                 activity = controllers.getJSONObject(kDefaultController).getString(kAndroid);
@@ -389,6 +393,7 @@ public class Cobalt {
                 enableInfiniteScroll = controllers.getJSONObject(kDefaultController).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(kDefaultController).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
                 backgroundColor = controllers.getJSONObject(kDefaultController).optString(kBackground, BACKGROUND_COLOR_DEFAULT);
+                statusBar = controllers.getJSONObject(kDefaultController).optJSONObject(kStatusBar);
             }
 
             if (activity.substring(0,1).equals(".")) activity = mContext.getPackageName() + activity;
@@ -399,6 +404,7 @@ public class Cobalt {
             bundle.putBoolean(kInfiniteScroll, enableInfiniteScroll);
             bundle.putInt(kInfiniteScrollOffset, infiniteScrollOffset);
             bundle.putString(kBackground, backgroundColor);
+            if (statusBar != null) bundle.putString(kStatusBar, statusBar.toString());
 
             return bundle;
         }
