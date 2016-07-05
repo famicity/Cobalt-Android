@@ -164,7 +164,7 @@ public class ActionViewMenuItem extends RelativeLayout {
             else {
                 mButton.setText(title);
                 if (color != null) {
-                    int textColor = 0;
+                    int textColor = Color.BLACK;
                     try {
                         textColor = Cobalt.parseColor(color);
                     }
@@ -175,7 +175,6 @@ public class ActionViewMenuItem extends RelativeLayout {
 
                         exception.printStackTrace();
                     }
-                    // TODO: @sebf default color to black?
                     mButton.setTextColor(textColor);
                 }
                 mButton.setEnabled(enabled);
