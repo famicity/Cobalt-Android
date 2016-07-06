@@ -1490,7 +1490,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     private int getBackgroundColor() {
         Bundle args = getArguments();
         if (args != null) {
-            String color = args.getString(Cobalt.kBackground);
+            String color = args.getString(Cobalt.kBackgroundColor);
             if (color != null) {
                 return Cobalt.parseColor(color);
             }
