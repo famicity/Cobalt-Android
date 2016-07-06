@@ -83,8 +83,7 @@ public class Cobalt {
     public final static String kBarsVisible = "visible";
     public final static String kVisibleTop = "top";
     public final static String kVisibleBottom = "bottom";
-    public final static String kBackground = "background";
-    public final static String kBarsBackgroundColor = "backgroundColor";
+    public final static String kBackgroundColor = "backgroundColor";
     public final static String kBarsColor = "color";
     public final static String kBarsTitle = "title";
     public final static String kBarsIcon = "androidIcon";
@@ -383,7 +382,7 @@ public class Cobalt {
                 enablePullToRefresh = controllers.getJSONObject(controller).optBoolean(kPullToRefresh);
                 enableInfiniteScroll = controllers.getJSONObject(controller).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(controller).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
-                backgroundColor = controllers.getJSONObject(controller).optString(kBackground, BACKGROUND_COLOR_DEFAULT);
+                backgroundColor = controllers.getJSONObject(controller).optString(kBackgroundColor, BACKGROUND_COLOR_DEFAULT);
                 statusBar = controllers.getJSONObject(controller).optJSONObject(kStatusBar);
             }
             else {
@@ -392,7 +391,7 @@ public class Cobalt {
                 enablePullToRefresh = controllers.getJSONObject(kDefaultController).optBoolean(kPullToRefresh);
                 enableInfiniteScroll = controllers.getJSONObject(kDefaultController).optBoolean(kInfiniteScroll);
                 infiniteScrollOffset = controllers.getJSONObject(kDefaultController).optInt(kInfiniteScrollOffset, INFINITE_SCROLL_OFFSET_DEFAULT_VALUE);
-                backgroundColor = controllers.getJSONObject(kDefaultController).optString(kBackground, BACKGROUND_COLOR_DEFAULT);
+                backgroundColor = controllers.getJSONObject(kDefaultController).optString(kBackgroundColor, BACKGROUND_COLOR_DEFAULT);
                 statusBar = controllers.getJSONObject(kDefaultController).optJSONObject(kStatusBar);
             }
 
@@ -403,7 +402,7 @@ public class Cobalt {
             bundle.putBoolean(kPullToRefresh, enablePullToRefresh);
             bundle.putBoolean(kInfiniteScroll, enableInfiniteScroll);
             bundle.putInt(kInfiniteScrollOffset, infiniteScrollOffset);
-            bundle.putString(kBackground, backgroundColor);
+            bundle.putString(kBackgroundColor, backgroundColor);
             if (statusBar != null) bundle.putString(kStatusBar, statusBar.toString());
 
             return bundle;
