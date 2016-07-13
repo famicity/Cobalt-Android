@@ -219,6 +219,10 @@ public class CobaltThemes {
                 String red = coercedColor.substring(1, 2);
                 String green = coercedColor.substring(2, 3);
                 String blue = coercedColor.substring(3, 4);
+                transparency += transparency;
+                red += red;
+                green += green;
+                blue += blue;
                 color = red + green + blue + transparency; // #rrggbbaa
                 break;
             }
@@ -228,6 +232,9 @@ public class CobaltThemes {
                 String red = coercedColor.substring(0, 1);
                 String green = coercedColor.substring(1, 2);
                 String blue = coercedColor.substring(2, 3);
+                red += red;
+                green += green;
+                blue += blue;
                 color = red + green + blue + "FF"; // #rrggbbaa
                 break;
             }
