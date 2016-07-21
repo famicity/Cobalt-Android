@@ -41,6 +41,7 @@ import org.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -141,28 +142,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             setupBars(null);
         }
 
-        if (extras.containsKey(Cobalt.kStatusBar)) {
-            Window window = getWindow();
-
-            try {
-                JSONObject statusBar = new JSONObject(extras.getString(Cobalt.kStatusBar));
-                boolean visible =  statusBar.optBoolean(Cobalt.kVisible, true);
-                if (!visible) {
-                    window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-
-                    String colorBg = statusBar.optString(Cobalt.kAndroidBackgroundColor,"#000000");
-                    window.setStatusBarColor(Cobalt.parseColor(colorBg));
-                }
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
+        setupStatusBar(extras);
 
 		if (savedInstanceState == null) {
             CobaltFragment fragment = getFragment();
@@ -388,6 +368,63 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         // TODO: handle all data types
         String hexColor = String.format("%08x", textColorPrimary.data);
         return hexColor.substring(2, 8) + hexColor.substring(0, 2);
+    }
+
+    public void setupStatusBar(Bundle configuration) {
+        Window window = getWindow();
+
+        if (configuration.containsKey(Cobalt.kStatusBar)) {
+            try {
+                JSONObject statusBar = new JSONObject(configuration.getString(Cobalt.kStatusBar));
+
+                boolean visible =  statusBar.optBoolean(Cobalt.kVisible, true);
+                if (!visible) {
+                    window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                }
+
+                boolean lightText = statusBar.optBoolean(Cobalt.kLightText, false);
+                if (!lightText && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+            if (configuration.containsKey(Cobalt.kBars)) {
+                try {
+                    JSONObject bars = new JSONObject(configuration.getString(Cobalt.kBars));
+                    String backgroundColor = bars.optString(Cobalt.kBackgroundColor, null);
+                    if (backgroundColor == null) {
+                        Log.d(TAG, "no color background define in bar");
+                        backgroundColor = getDefaultActionBarBackgroundColor();
+                        Log.d(TAG, "color background get default : "+backgroundColor);
+                    }
+                    try {
+                        Log.d(TAG, "color background set : "+backgroundColor);
+                        window.setStatusBarColor(Cobalt.darkenColor(backgroundColor, 0.8f));
+                    }
+                    catch (IllegalArgumentException exception) {
+                        if (Cobalt.DEBUG) {
+                            Log.w(Cobalt.TAG, TAG + " - setupBars: backgroundColor " + backgroundColor + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
+                        }
+                        exception.printStackTrace();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                String colorBg = configuration.getString(Cobalt.kBackgroundColor);
+                Log.d(TAG, "no action bar color background set to webview : "+colorBg);
+                // TODO Find a way if colorbg is not #RRBBGG, update parsecolor cobalt ?
+                window.setStatusBarColor(Cobalt.darkenColor(colorBg, 0.8f));
+            }
+        }
     }
 
     public void setupBars(JSONObject configuration) {

@@ -76,10 +76,9 @@ public class Cobalt {
     private final static String kPlugins = "plugins";
     private final static String kAndroid = "android";
     private final static String kDefaultController = "default";
-
     public final static String kBars = "bars";
     public final static String kStatusBar = "statusBar";
-    public final static String kAndroidBackgroundColor = "androidBackgroundColor";
+    public final static String kLightText = "lightText";
     public final static String kBarsVisible = "visible";
     public final static String kVisibleTop = "top";
     public final static String kVisibleBottom = "bottom";
@@ -547,5 +546,13 @@ public class Cobalt {
         }
 
         return Color.parseColor(color);
+    }
+
+    public static int darkenColor(String color, float coef) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(Cobalt.parseColor(color), hsv);
+        hsv[2] *= coef;
+        //hsv[2] *= 0.8f;
+        return Color.HSVToColor(hsv);
     }
 }
