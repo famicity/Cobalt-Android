@@ -764,6 +764,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             try {
                 String title = content.getString(Cobalt.kBarsTitle);
                 if (title != null) {
+                    actionBar.setDisplayShowTitleEnabled(true);
                     actionBar.setTitle(title);
                 } else {
                     actionBar.setDisplayShowTitleEnabled(false);
