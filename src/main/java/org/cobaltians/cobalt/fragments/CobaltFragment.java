@@ -90,7 +90,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     protected CobaltSwipeRefreshLayout mSwipeRefreshLayout;
 
 	protected Handler mHandler = new Handler();
-	private ArrayList<JSONObject> mWaitingJavaScriptCallsQueue = new ArrayList<JSONObject>();
+	private ArrayList<JSONObject> mWaitingJavaScriptCallsQueue = new ArrayList<>();
 	
 	private boolean mPreloadOnCreate = true;
 	private boolean mCobaltIsReady = false;
@@ -116,7 +116,6 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         super.onCreate(savedInstanceState);
         mPluginManager = CobaltPluginManager.getInstance(mContext);
         setRetainInstance(true);
-        mAllowCommit = true;
     }
 
 	@Override
@@ -154,14 +153,19 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	@Override
 	public void onStart() {
 		super.onStart();
+
+        mAllowCommit = true;
+
 		addWebView();
 		preloadContent();
 	}
 
     @Override
     public void onResume() {
-        mAllowCommit = true;
         super.onResume();
+
+        executeWaitingCalls();
+
         JSONObject data = ((CobaltActivity) mContext).getDataNavigation();
         sendEvent(Cobalt.JSEventOnPageShown, data, null);
         ((CobaltActivity) mContext).setDataNavigation(null);
@@ -183,6 +187,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     @Override
     public void onSaveInstanceState(Bundle outState) {
         mAllowCommit = false;
+
         super.onSaveInstanceState(outState);
         if (mWebView != null) {
             mWebView.saveState(outState);
@@ -376,8 +381,10 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 */
 	private void executeScriptInWebView(final JSONObject jsonObj) {
         if (jsonObj != null) {
-			if (mCobaltIsReady) {
-                mWebView.post(new Runnable() {
+            Handler webViewHandler = mWebView.getHandler();
+			if (webViewHandler != null
+                && mCobaltIsReady) {
+                webViewHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         // Line & paragraph separators are not JSON compliant but supported by JSONObject
@@ -401,15 +408,16 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - executeScriptInWebView: jsonObj is null!");
 	}
 
-	private void executeWaitingCalls() {
-		int waitingJavaScriptCallsQueueLength = mWaitingJavaScriptCallsQueue.size();
+	public void executeWaitingCalls() {
+        ArrayList<JSONObject> waitingJavaScriptCallsQueue = new ArrayList<>(mWaitingJavaScriptCallsQueue);
+		int waitingJavaScriptCallsQueueLength = waitingJavaScriptCallsQueue.size();
+
+        mWaitingJavaScriptCallsQueue.clear();
 
 		for (int i = 0 ; i < waitingJavaScriptCallsQueueLength ; i++) {
-			if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeWaitingCalls: execute " + mWaitingJavaScriptCallsQueue.get(i).toString());
-			executeScriptInWebView(mWaitingJavaScriptCallsQueue.get(i));
+			if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeWaitingCalls: execute " + waitingJavaScriptCallsQueue.get(i).toString());
+			executeScriptInWebView(waitingJavaScriptCallsQueue.get(i));
 		}
-		
-		mWaitingJavaScriptCallsQueue.clear();
 	}
 
 	/****************************************************************************************
