@@ -72,8 +72,15 @@ public class ActionViewMenuItem extends RelativeLayout {
         mContext = context;
         mInflater = LayoutInflater.from(mContext);
 
-        this.mAction = action;
-        this.mBarsColor = barsColor;
+        mAction = action;
+        mBarsColor = barsColor;
+
+        try {
+            mName = action.getString(Cobalt.kActionName);
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         init();
     }
@@ -151,12 +158,7 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mImageButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        try {
-                            String name  = mAction.getString(Cobalt.kActionName);
-                            ((CobaltActivity)mContext).onPressed(name);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        ((CobaltActivity)mContext).onPressed(mName);
                     }
                 });
                 // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
@@ -183,12 +185,7 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        try {
-                            String name  = mAction.getString(Cobalt.kActionName);
-                            ((CobaltActivity) mContext).onPressed(name);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        ((CobaltActivity) mContext).onPressed(mName);
                     }
                 });
                 // TODO: apply color for items in overflow popup
