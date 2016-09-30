@@ -32,7 +32,9 @@ package org.cobaltians.cobalt.customviews;
 import org.cobaltians.cobalt.fragments.CobaltFragment;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.webkit.WebView;
 
 public class OverScrollingWebView extends WebView {
@@ -69,5 +71,28 @@ public class OverScrollingWebView extends WebView {
 			&& IScrollListener.class.isAssignableFrom(mScrollListener.getClass())) {
 			mScrollListener.onOverScrolled(scrollX, scrollY, oldScrollX, oldScrollY);
 		}
-	}	
+	}
+
+	/*
+	 * TODO: do not delete this time!
+	 * Overwrite this method and calling onScrollChanged fixes an issue about "a race condition where
+	 * the webkit layout engine gets out of sync with the Android layout and starts mapping touch
+	 * events to an incorrect coordinate system" leading to "all touches fall outside of the window,
+	 * and get rejected."
+	 * source: https://stackoverflow.com/questions/12090899/android-webview-jellybean-should-not-happen-no-rect-based-test-nodes-found#comment-22698848
+	 * "I met with John Reck, an engineer on the Android WebView team, a couple of days ago. He
+	 * confirmed that this is a bug--basically a race condition where the webkit layout engine gets
+	 * out of sync with the Android layout and starts mapping touch events to an incorrect
+	 * coordinate system. Until the bug is fixed, calling onScrollChanged() to resync the layouts
+	 * seems to be the best workaround"
+     */
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
+			&& Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+			onScrollChanged(getScrollX(), getScrollY(), getScrollX(), getScrollY());
+		}
+
+		return super.onTouchEvent(event);
+	}
 }
