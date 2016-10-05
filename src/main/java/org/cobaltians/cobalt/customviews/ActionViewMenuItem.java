@@ -1,6 +1,5 @@
 package org.cobaltians.cobalt.customviews;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -36,7 +35,7 @@ public class ActionViewMenuItem extends RelativeLayout {
 
     protected String mName;
     protected JSONObject mAction;
-    protected String mBarsColor;
+    protected int mBarsColor;
     protected ActionViewMenuItemListener mListener;
     protected Context mContext;
 
@@ -67,7 +66,7 @@ public class ActionViewMenuItem extends RelativeLayout {
         init();
     }
 
-    public ActionViewMenuItem(Context context, JSONObject action, String barsColor) {
+    public ActionViewMenuItem(Context context, JSONObject action, int barsColor) {
         super(context);
         mContext = context;
         mInflater = LayoutInflater.from(mContext);
@@ -95,10 +94,26 @@ public class ActionViewMenuItem extends RelativeLayout {
             String title = mAction.getString(Cobalt.kActionTitle);
             String icon = mAction.optString(Cobalt.kActionIcon, null);               // must be "fontKey character"
             String androidIcon = mAction.optString(Cobalt.kActionAndroidIcon, null);
-            String color = mAction.optString(Cobalt.kActionColor, mBarsColor);             // default: same as bar color
+            String color = mAction.optString(Cobalt.kActionColor, null);             // default: same as bar color (see below)
             boolean visible = mAction.optBoolean(Cobalt.kActionVisible, true);
             boolean enabled = mAction.optBoolean(Cobalt.kActionEnabled, true);
             String badge = mAction.optString(Cobalt.kActionBadge, null);             // if "", hide it
+
+            int colorInt = mBarsColor;
+            if (color != null) {
+                try {
+                    colorInt = Cobalt.parseColor(color);
+                }
+                catch (IllegalArgumentException exception) {
+                    if (Cobalt.DEBUG) {
+                        Log.w(Cobalt.TAG, TAG + " - init: color " + color + " format not " +
+                                "supported, use (#)RGB or (#)RRGGBB(AA). Using bars color #" +
+                                Integer.toHexString(colorInt) + "instead.");
+                    }
+
+                    exception.printStackTrace();
+                }
+            }
 
             mImageButton = (ImageButton) findViewById(R.id.image_button_item);
             mButton = (Button) findViewById(R.id.button_item);
@@ -112,7 +127,7 @@ public class ActionViewMenuItem extends RelativeLayout {
 
                 if (idResource != 0) {
                     try {
-                        mImageButton.setColorFilter(Cobalt.parseColor(color));
+                        mImageButton.setColorFilter(colorInt);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             mImageButton.setImageDrawable(mContext.getDrawable(idResource));
                         } else
@@ -123,20 +138,7 @@ public class ActionViewMenuItem extends RelativeLayout {
                     }
                 }
                 else {
-                    int iconColor = CobaltFontManager.DEFAULT_COLOR;
-
-                    try {
-                        iconColor = Cobalt.parseColor(color);
-                    }
-                    catch (IllegalArgumentException exception) {
-                        if (Cobalt.DEBUG) {
-                            Log.w(Cobalt.TAG, TAG + " - init setImageDrawable : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                        }
-
-                        exception.printStackTrace();
-                    }
-
-                    mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, iconColor));
+                    mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, colorInt));
                 }
 
                 mImageButton.setEnabled(enabled);
@@ -166,18 +168,7 @@ public class ActionViewMenuItem extends RelativeLayout {
             else {
                 mButton.setText(title);
                 if (color != null) {
-                    int textColor = Color.BLACK;
-                    try {
-                        textColor = Cobalt.parseColor(color);
-                    }
-                    catch (IllegalArgumentException exception) {
-                        if (Cobalt.DEBUG) {
-                            Log.w(Cobalt.TAG, TAG + " - init setTextColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                        }
-
-                        exception.printStackTrace();
-                    }
-                    mButton.setTextColor(textColor);
+                    mButton.setTextColor(colorInt);
                 }
                 mButton.setEnabled(enabled);
                 mButton.setVisibility(visible ? VISIBLE : GONE);
@@ -248,15 +239,31 @@ public class ActionViewMenuItem extends RelativeLayout {
     }
 
     public void setActionContent(JSONObject content) {
-        // TODO: @sebf You're not forced to track the action content because,
-        // compared to iOS, where bars are the navigationController ones, so need to be reset at push then re-init at pop,
+        // TODO: @sebf You're not forced to track the action content because, compared to iOS, where
+        // bars are the navigationController ones, so need to be reset at push then re-init at pop,
         // on Android, they're activity ones.
 		mAction = content;
 		
         String androidIcon = mAction.optString(Cobalt.kActionAndroidIcon, null);
         String title = mAction.optString(Cobalt.kActionTitle, null);
         String icon = mAction.optString(Cobalt.kActionIcon, null);
-        String color = mAction.optString(Cobalt.kActionColor, mBarsColor);
+        String color = mAction.optString(Cobalt.kActionColor, null);
+
+        int colorInt = mBarsColor;
+        if (color != null) {
+            try {
+                colorInt = Cobalt.parseColor(color);
+            }
+            catch (IllegalArgumentException exception) {
+                if (Cobalt.DEBUG) {
+                    Log.w(Cobalt.TAG, TAG + " - setActionContent: color " + color + " format not " +
+                            "supported, use (#)RGB or (#)RRGGBB(AA). Using bars color #" +
+                            Integer.toHexString(colorInt) + "instead.");
+                }
+
+                exception.printStackTrace();
+            }
+        }
 
         if ((androidIcon != null || icon != null) && mImageButton != null) {
             int idResource;
@@ -275,40 +282,12 @@ public class ActionViewMenuItem extends RelativeLayout {
                 }
             }
             else {
-                int iconColor = 0;
-                try {
-                    iconColor = Cobalt.parseColor(color);
-                }
-                catch (IllegalArgumentException exception) {
-                    if (Cobalt.DEBUG) {
-                        Log.w(Cobalt.TAG, TAG + " - init setIconColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                    }
-
-                    exception.printStackTrace();
-                }
-
-                mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, iconColor));
+                mImageButton.setImageDrawable(CobaltFontManager.getCobaltFontDrawable(mContext, icon, colorInt));
             }
         }
         else if (title != null && mButton != null) {
             mButton.setText(title);
-
-            // TODO: @sebf cannot happen
-            if (color != null) {
-                int textColor = 0;
-                try {
-                    textColor = Cobalt.parseColor(color);
-                }
-                catch (IllegalArgumentException exception) {
-                    if (Cobalt.DEBUG) {
-                        Log.w(Cobalt.TAG, TAG + " - init setTextColor : color " + color + " format not supported, use (#)RGB or (#)RRGGBB(AA).");
-                    }
-
-                    exception.printStackTrace();
-                }
-
-                mButton.setTextColor(textColor);
-            }
+            mButton.setTextColor(colorInt);
         }
     }
 

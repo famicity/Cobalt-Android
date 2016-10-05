@@ -30,6 +30,7 @@
 package org.cobaltians.cobalt;
 
 import org.cobaltians.cobalt.activities.CobaltActivity;
+import org.cobaltians.cobalt.customviews.BottomBar;
 import org.cobaltians.cobalt.fragments.CobaltFragment;
 import org.cobaltians.cobalt.plugin.CobaltAbstractPlugin;
 
@@ -37,9 +38,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.AttrRes;
+import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
+import android.util.TypedValue;
 
 import java.io.*;
 import java.util.HashMap;
@@ -64,8 +72,12 @@ public class Cobalt {
     // INFINITE SCROLL
     public static final int INFINITE_SCROLL_OFFSET_DEFAULT_VALUE = 0;
 
-    // BACKGROUND COLOR VIEW
+    // DEFAULT COLOR VALUES
+    // Background color view
     public static final String BACKGROUND_COLOR_DEFAULT = "#FFFFFF";
+    public static final int BAR_BACKGROUND_COLOR_DEFAULT_VALUE = 0xFF212121;
+    public static final int BAR_ICON_COLOR_DEFAULT_VALUE = Color.WHITE;
+    public static final int BAR_TEXT_COLOR_DEFAULT_VALUE = Color.WHITE;
 
     /**********************************************************************************************
      * CONFIGURATION FILE
@@ -234,7 +246,7 @@ public class Cobalt {
      **********************************************************************************************/
 
     private static Cobalt sInstance;
-    private static Context mContext;
+    private static Context sContext;
     private static JSONObject sCobaltConfiguration;
 
     private String mResourcePath = "www/";
@@ -247,7 +259,7 @@ public class Cobalt {
      **********************************************************************************************/
 
     private Cobalt(Context context) {
-        mContext = context.getApplicationContext();
+        sContext = context.getApplicationContext();
     }
 
     public static Cobalt getInstance(Context context) {
@@ -275,7 +287,7 @@ public class Cobalt {
     public String getResourcePathFromAsset() {return mResourcePath;}
 
     public static Context getAppContext() {
-        return mContext;
+        return sContext;
     }
 
     /**********************************************************************************************
@@ -341,7 +353,7 @@ public class Cobalt {
                 if (Activity.class.isAssignableFrom(pClass)) {
                     configuration.putString(kPage, page);
 
-                    intent = new Intent(mContext, pClass);
+                    intent = new Intent(sContext, pClass);
                     intent.putExtra(kExtras, configuration);
                 }
                 else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - getIntentForController: " + activity + " does not inherit from Activity!");
@@ -390,7 +402,7 @@ public class Cobalt {
                 backgroundColor = controllers.getJSONObject(kDefaultController).optString(kBackgroundColor, BACKGROUND_COLOR_DEFAULT);
             }
 
-            if (activity.substring(0,1).equals(".")) activity = mContext.getPackageName() + activity;
+            if (activity.substring(0,1).equals(".")) activity = sContext.getPackageName() + activity;
 
             bundle.putString(kActivity, activity);
             if (bars != null) bundle.putString(kBars, bars.toString());
@@ -483,7 +495,7 @@ public class Cobalt {
 
     private String readFileFromAssets(String file) {
         try {
-            AssetManager assetManager = mContext.getAssets();
+            AssetManager assetManager = sContext.getAssets();
             InputStream inputStream = assetManager.open(file);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder fileContent = new StringBuilder();
@@ -504,6 +516,113 @@ public class Cobalt {
         }
 
         return "";
+    }
+
+    /**
+     * Retrieve the value of the color attribute in the theme applied to bars corresponding to the
+     * background color of bars.
+     * @param activity The activity holding the bars.
+     * @return int Returns the color int if the attribute was found and its value parse
+     *             succeeded, else the color int corresponding to material grey 900 (0xFF212121).
+     */
+    public int getThemedBarBackgroundColor(@NonNull CobaltActivity activity) {
+        return getThemedColorValue(activity.getTheme(), android.support.v7.appcompat.R.attr.colorPrimary, BAR_BACKGROUND_COLOR_DEFAULT_VALUE);
+    }
+
+    // TODO: differentiate in overflow or not?
+    /**
+     * Retrieve the value of the color attribute in the theme applied to bars corresponding to the
+     * text color in bars.
+     * @param activity The activity holding the bars.
+     * @return int Returns the color int if the attribute was found and its value parse
+     *             succeeded, else the color int corresponding to white (0xFFFFFFFF).
+     */
+    public int getThemedBarTextColor(@NonNull CobaltActivity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            ActionBar actionBar = activity.getSupportActionBar();
+            if (actionBar != null) {
+                return getThemedColorValue(actionBar.getThemedContext().getTheme(), android.R.attr.textColorPrimary, BAR_TEXT_COLOR_DEFAULT_VALUE);
+            }
+        }
+        else {
+            return getThemedColorValue(activity.getTheme(), android.R.attr.textColorPrimary, BAR_TEXT_COLOR_DEFAULT_VALUE);
+        }
+
+        return BAR_TEXT_COLOR_DEFAULT_VALUE;
+    }
+
+    // TODO: differentiate in overflow or not?
+    /**
+     * Retrieve the value of the color attribute in the theme applied to bars corresponding to the
+     * icons color in bars.
+     * @param activity The activity holding the bars.
+     * @return int Returns the color int if the attribute was found and its value parse
+     *             succeeded, else the color int corresponding to white (0xFFFFFFFF).
+     */
+    public int getThemedBarIconColor(@NonNull CobaltActivity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            ActionBar actionBar = activity.getSupportActionBar();
+            if (actionBar != null) {
+                return getThemedColorValue(actionBar.getThemedContext().getTheme(), android.R.attr.textColorPrimary, BAR_ICON_COLOR_DEFAULT_VALUE);
+            }
+        }
+        else {
+            return getThemedColorValue(activity.getTheme(), android.support.v7.appcompat.R.attr.colorControlNormal, BAR_ICON_COLOR_DEFAULT_VALUE);
+        }
+
+        return BAR_ICON_COLOR_DEFAULT_VALUE;
+    }
+
+    /**
+     * Retrieve the value of a color attribute in the theme.
+     * @param theme The theme.
+     * @param attr The resource identifier of the desired attribute.
+     * @param defaultValue The default value to return if the attribute is not found
+     *                     or its value has failed to parse.
+     * @return int Returns the color int if the attribute was found
+     *         and its value parse succeeded, else defaultValue.
+     */
+    private int getThemedColorValue(@NonNull Resources.Theme theme, @AttrRes int attr, int defaultValue) {
+        TypedValue attrValue = new TypedValue();
+
+        if (! theme.resolveAttribute(attr, attrValue, true)) {
+            return 0;
+        }
+
+        switch (attrValue.type) {
+            case TypedValue.TYPE_INT_COLOR_ARGB4:
+            case TypedValue.TYPE_INT_COLOR_ARGB8:
+            case TypedValue.TYPE_INT_COLOR_RGB4:
+            case TypedValue.TYPE_INT_COLOR_RGB8:
+                return attrValue.data;
+            case TypedValue.TYPE_STRING:
+                if (attrValue.resourceId == 0) {
+                    return 0;
+                }
+
+                try {
+                    ColorStateList textColorPrimaryList;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        textColorPrimaryList = sContext.getResources().getColorStateList(attrValue.resourceId, theme);
+                    }
+                    else {
+                        textColorPrimaryList = sContext.getResources().getColorStateList(attrValue.resourceId);
+                    }
+
+                    if (textColorPrimaryList == null) {
+                        return 0;
+                    }
+                    else {
+                        return textColorPrimaryList.getDefaultColor();
+                    }
+                }
+                catch(Resources.NotFoundException exception) {
+                    exception.printStackTrace();
+                    return 0;
+                }
+            default:
+                return 0;
+        }
     }
 
     /**

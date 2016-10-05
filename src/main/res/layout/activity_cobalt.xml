@@ -37,7 +37,7 @@
     <android.support.design.widget.AppBarLayout
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:theme="@style/ThemeOverlay.Cobalt.AppBarOverlay">
+        android:theme="@style/ThemeOverlay.Cobalt.Dark.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/top_bar"
@@ -67,7 +67,7 @@
     <android.support.design.widget.AppBarLayout
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:theme="@style/ThemeOverlay.Cobalt.AppBarOverlay">
+        android:theme="@style/ThemeOverlay.Cobalt.Dark.AppBarOverlay">
 
         <org.cobaltians.cobalt.customviews.BottomBar
             android:id="@+id/bottom_bar"
