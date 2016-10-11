@@ -521,14 +521,15 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 */
 	// This method must be public !!!
 	@JavascriptInterface
-	public boolean onCobaltMessage(String message) {
+	public void onCobaltMessage(String message) {
 		try {
 			final JSONObject jsonObj = new JSONObject(message);
-			
-			// TYPE
-			if (jsonObj.has(Cobalt.kJSType)) {
-				String type = jsonObj.getString(Cobalt.kJSType);
 
+            boolean messageHandled = false;
+
+            // TYPE
+            String type = jsonObj.optString(Cobalt.kJSType, null);
+			if (type != null) {
                 final JSONObject data;
                 String callback;
                 String action;
@@ -536,46 +537,71 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 switch (type) {
                     // CALLBACK
                     case Cobalt.JSTypeCallBack:
-                        String callbackID = jsonObj.getString(Cobalt.kJSCallback);
-                        data = jsonObj.optJSONObject(Cobalt.kJSData);
-                        return handleCallback(callbackID, data);
+                        try {
+                            String callbackId = jsonObj.getString(Cobalt.kJSCallback);
+                            data = jsonObj.optJSONObject(Cobalt.kJSData);
+                            messageHandled = handleCallback(callbackId, data);
+                        }
+                        catch(JSONException exception) {
+                            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - onCobaltMessage: " +
+                                            Cobalt.kJSCallback + " field is missing.\n" + message);
+                            exception.printStackTrace();
+                        }
+                        break;
                     // COBALT IS READY
                     case Cobalt.JSTypeCobaltIsReady:
-                        String versionWeb = jsonObj.optString(Cobalt.kJSVersion, null);
-                        String versionNative = getResources().getString(R.string.version_name);
-                        if (versionWeb != null && !versionWeb.equals(versionNative))
-                            Log.e(TAG, "Warning : Cobalt version mismatch : Android Cobalt version is " + versionNative + " but Web Cobalt version is " + versionWeb + ". You should fix this. ");
-                        onCobaltIsReady();
-                        return true;
+                        onCobaltIsReady(jsonObj.optString(Cobalt.kJSVersion, null));
+                        messageHandled = true;
+                        break;
                     // EVENT
                     case Cobalt.JSTypeEvent:
-                        String event = jsonObj.getString(Cobalt.kJSEvent);
-                        data = jsonObj.optJSONObject(Cobalt.kJSData);
-                        callback = jsonObj.optString(Cobalt.kJSCallback, null);
-                        return handleEvent(event, data, callback);
+                        try {
+                            String event = jsonObj.getString(Cobalt.kJSEvent);
+                            data = jsonObj.optJSONObject(Cobalt.kJSData);
+                            callback = jsonObj.optString(Cobalt.kJSCallback, null);
+                            onUnhandledEvent(event, data, callback);
+                            messageHandled = true;
+                        }
+                        catch(JSONException exception) {
+                            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - onCobaltMessage: " +
+                                    Cobalt.kJSEvent + " field is missing.\n" + message);
+                            exception.printStackTrace();
+                        }
+                        break;
                     // INTENT
                     case Cobalt.JSTypeIntent:
-                        action = jsonObj.getString(Cobalt.kJSAction);
-
-                        // OPEN EXTERNAL URL
-                        if (action.equals(Cobalt.JSActionIntentOpenExternalUrl)) {
-                            data = jsonObj.getJSONObject(Cobalt.kJSData);
-                            String url = data.getString(Cobalt.kJSUrl);
-                            openExternalUrl(url);
-
-                            return true;
+                        try {
+                            action = jsonObj.getString(Cobalt.kJSAction);
+                            // OPEN EXTERNAL URL
+                            if (action.equals(Cobalt.JSActionIntentOpenExternalUrl)) {
+                                data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                String url = data.getString(Cobalt.kJSUrl);
+                                openExternalUrl(url);
+                                messageHandled = true;
+                            }
                         }
-                        // UNHANDLED INTENT
-                        else {
-                            onUnhandledMessage(jsonObj);
-                            break;
+                        catch(JSONException exception) {
+                            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - onCobaltMessage: " +
+                                    Cobalt.kJSAction + ", " + Cobalt.kJSData + " or " +
+                                    Cobalt.kJSData + "." + Cobalt.kJSUrl + " field(s) is/are " +
+                                    "missing.\n" + message);
+                            exception.printStackTrace();
                         }
+                        break;
                     // LOG
                     case Cobalt.JSTypeLog:
-                        String text = jsonObj.getString(Cobalt.kJSValue);
-                        Log.d(Cobalt.TAG, "JS LOG: " + text);
-                        return true;
+                        try {
+                            String text = jsonObj.getString(Cobalt.kJSValue);
+                            Log.d(Cobalt.TAG, "JS LOG: " + text);
+                            messageHandled = true;
+                        }
+                        catch(JSONException exception) {
+                            if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - onCobaltMessage: " +
+                                    Cobalt.kJSValue + " field is missing.\n" + message);
+                            exception.printStackTrace();
+                        }
                     // NAVIGATION
+                    // TODO: runOnUIThread
                     case Cobalt.JSTypeNavigation:
                         action = jsonObj.getString(Cobalt.kJSAction);
 
@@ -659,35 +685,48 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             onUnhandledMessage(jsonObj);
                             break;
                         }
-                    // UNHANDLED TYPE
-                    default:
-                        onUnhandledMessage(jsonObj);
-                        break;
                 }
 			}
-			// UNHANDLED MESSAGE
-			else {
-				onUnhandledMessage(jsonObj);
-			}
+
+            // UNHANDLED MESSAGE
+            if (! messageHandled) {
+                onUnhandledMessage(jsonObj);
+            }
 		} 
 		catch (JSONException exception) {
-            if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCobaltMessage: JSONException");
+            if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCobaltMessage: Unable to parse " +
+                    "message as JSON.\n" + message);
 			exception.printStackTrace();
 		}
+
+        /*
         catch (NullPointerException exception) {
             if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCobaltMessage: NullPointerException");
             exception.printStackTrace();
         }
-        
-		return false;
+        */
 	}
 	
-	private void onCobaltIsReady() {
-		if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - onReady - version "+getResources().getString(R.string.version_name));
+	private void onCobaltIsReady(String version) {
+        String androidVersion = getResources().getString(R.string.version_name);
+        if (! androidVersion.equals(version)) {
+            Log.w(TAG, "Cobalt version mismatch: Android Cobalt version is " + androidVersion +
+                    " but Web Cobalt version is " + version + ". You should fix this. ");
+        }
+
+		if (Cobalt.DEBUG) {
+            Log.i(Cobalt.TAG, TAG + " - onCobaltIsReady: version " + androidVersion);
+        }
 
 		mCobaltIsReady = true;
 		executeWaitingCalls();
-        onReady();
+
+        ((Activity) mContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onReady();
+            }
+        });
 	}
 
     protected void onReady() { }
@@ -700,13 +739,13 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     return true;
                 }
                 catch (JSONException exception) {
-                    if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - handleCallback: JSONException");
+                    if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - handleCallback " +
+                            Cobalt.JSCallbackOnBackButtonPressed + ": missing value field.");
                     exception.printStackTrace();
                     return false;
                 }
             case Cobalt.JSCallbackPullToRefreshDidRefresh:
-                mWebView.post(new Runnable() {
-
+                ((Activity)mContext).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         onPullToRefreshDidRefresh();
@@ -714,8 +753,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 });
                 return true;
             case Cobalt.JSCallbackInfiniteScrollDidRefresh:
-                mWebView.post(new Runnable() {
-
+                ((Activity)mContext).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         onInfiniteScrollDidRefresh();
@@ -723,15 +761,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 });
                 return true;
             default:
-                return onUnhandledCallback(callback, data);
+                onUnhandledCallback(callback, data);
+                return true;
         }
 	}
 	
 	protected abstract boolean onUnhandledCallback(String callback, JSONObject data);
-	
-	private boolean handleEvent(String event, JSONObject data, String callback) {
-		return onUnhandledEvent(event, data, callback);
-	}
 	
 	protected abstract boolean onUnhandledEvent(String event, JSONObject data, String callback);
 	
@@ -964,7 +999,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
             });
         }
     }
-	protected abstract void onUnhandledMessage(JSONObject message);
+
+	protected abstract boolean onUnhandledMessage(JSONObject message);
 	
 	/*****************************************************************************************************************
 	 * NAVIGATION
@@ -1143,10 +1179,9 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 */
 	protected void onBackPressed(boolean allowedToBack) {
         if (allowedToBack) {
-            if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - onBackPressed: onBackPressed event allowed by Web view");
             ((CobaltActivity) mContext).back();
         }
-        else if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - onBackPressed: onBackPressed event denied by Web view");
+        else if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - onBackPressed: denied by WebView");
 	}
 	
 	/***********************************************************************************************************************************
@@ -1381,8 +1416,13 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
      * OPEN EXTERNAL URL
      ********************************************************/
 
-    private void openExternalUrl(String url) {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    private void openExternalUrl(final String url) {
+        ((Activity) mContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            }
+        });
     }
 
     /******************************************************************************************************************************

@@ -909,7 +909,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 	 */
 	public void back() {
 		runOnUiThread(new Runnable() {
-
             @Override
             public void run() {
                 backWithSuper();
@@ -918,11 +917,12 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 	}
 
 	private void backWithSuper() {
-
+        // Catch IllegalStateException to fix a crash on API > 11
         try {
             super.onBackPressed();
-        }catch (IllegalStateException exc) {
-            if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " onBackPressed: catch illegalStateException for fix crash on API > 11");
+        }
+        catch (IllegalStateException exception) {
+            exception.printStackTrace();
         }
 	}
 
