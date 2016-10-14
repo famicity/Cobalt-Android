@@ -80,7 +80,7 @@ public final class CobaltPluginManager {
      * COBALT METHODS
      ****************************************************************************************************************************************/
 	
-	public boolean onMessage(Context context, CobaltFragment fragment, JSONObject message) {
+	public boolean onMessage(Context context, CobaltFragment fragment, final JSONObject message) {
 		try {
 			String pluginName = message.getString(Cobalt.kJSPluginName);
 			Class<? extends CobaltAbstractPlugin> pluginClass = mPluginsMap.get(pluginName);
@@ -88,9 +88,16 @@ public final class CobaltPluginManager {
 				try {
 					Method pluginGetInstanceMethod = pluginClass.getDeclaredMethod(GET_INSTANCE_METHOD_NAME, CobaltPluginWebContainer.class);
 					try {
-						CobaltPluginWebContainer webContainer = new CobaltPluginWebContainer((Activity) context, fragment);
-						CobaltAbstractPlugin plugin = (CobaltAbstractPlugin) pluginGetInstanceMethod.invoke(null, webContainer);
-						plugin.onMessage(webContainer, message);
+						final CobaltPluginWebContainer webContainer = new CobaltPluginWebContainer((Activity) context, fragment);
+						final CobaltAbstractPlugin plugin = (CobaltAbstractPlugin) pluginGetInstanceMethod.invoke(null, webContainer);
+
+						((Activity) mContext).runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								plugin.onMessage(webContainer, message);
+							}
+						});
+
 						return true;
 					}
 					catch (NullPointerException exception) {
