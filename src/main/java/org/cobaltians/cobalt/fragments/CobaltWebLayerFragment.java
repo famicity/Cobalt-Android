@@ -83,7 +83,7 @@ public class CobaltWebLayerFragment extends CobaltFragment {
 	}
 	
 	@Override
-	protected void onUnhandledMessage(final JSONObject message) {
+	protected boolean onUnhandledMessage(final JSONObject message) {
         try {
             String type = message.optString(Cobalt.kJSType);
 
@@ -98,6 +98,8 @@ public class CobaltWebLayerFragment extends CobaltFragment {
                             dismissWebLayer(message);
                         }
                     });
+
+					return true;
                 }
             }
         }
@@ -105,6 +107,8 @@ public class CobaltWebLayerFragment extends CobaltFragment {
             if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onUnhandledMessage: JSONException");
             exception.printStackTrace();
         }
+
+		return false;
     }
 	
 	@Override

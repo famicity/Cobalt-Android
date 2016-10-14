@@ -1386,90 +1386,96 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
 	private void showAlertDialog(JSONObject data, final String callback) {		
 		try {
-			String title = data.optString(Cobalt.kJSAlertTitle);
-			String message = data.optString(Cobalt.kJSMessage);
-			boolean cancelable = data.optBoolean(Cobalt.kJSAlertCancelable, false);
-			JSONArray buttons = data.has(Cobalt.kJSAlertButtons) ? data.getJSONArray(Cobalt.kJSAlertButtons) : new JSONArray();
-
-            final AlertDialog alertDialog = new AlertDialog.Builder(mContext)
-                                                            .setTitle(title)
-                                                            .setMessage(message)
-                                                            .create();
-            alertDialog.setCancelable(cancelable);
-
-			if (buttons.length() == 0) {
-                alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "OK", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if (callback != null) {
-							try {
-								JSONObject data = new JSONObject();
-								data.put(Cobalt.kJSAlertButtonIndex, 0);
-								sendCallback(callback, data);
-							} 
-							catch (JSONException exception) {
-                                if (Cobalt.DEBUG) Log.e(Cobalt.TAG, "Alert - onClick: JSONException");
-								exception.printStackTrace();
-							}								
-						}
-					}
-				});
-			}
-			else {
-				int buttonsLength = Math.min(buttons.length(), 3);
-				for (int i = 0 ; i < buttonsLength ; i++) {
-                    int buttonId;
-
-                    switch(i) {
-                        case 0:
-                        default:
-                            buttonId = DialogInterface.BUTTON_NEGATIVE;
-                            break;
-                        case 1:
-                            buttonId = DialogInterface.BUTTON_NEUTRAL;
-                            break;
-                        case 2:
-                            buttonId = DialogInterface.BUTTON_POSITIVE;
-                            break;
-                    }
-
-                    alertDialog.setButton(buttonId, buttons.getString(i), new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							if (callback != null) {
-                                int buttonIndex;
-                                switch(which) {
-                                    case DialogInterface.BUTTON_NEGATIVE:
-                                    default:
-                                        buttonIndex = 0;
-                                        break;
-                                    case DialogInterface.BUTTON_NEUTRAL:
-                                        buttonIndex = 1;
-                                        break;
-                                    case DialogInterface.BUTTON_POSITIVE:
-                                        buttonIndex = 2;
-                                        break;
-                                }
-
-								try {
-									JSONObject data = new JSONObject();
-									data.put(Cobalt.kJSAlertButtonIndex, buttonIndex);
-									sendCallback(callback, data);
-								} 
-								catch (JSONException exception) {
-                                    if (Cobalt.DEBUG) Log.e(Cobalt.TAG, "Alert - onClick: JSONException");
-									exception.printStackTrace();
-								}
-							}
-						}
-					});
-				}
-			}
+			final String title = data.optString(Cobalt.kJSAlertTitle);
+			final String message = data.optString(Cobalt.kJSMessage);
+			final boolean cancelable = data.optBoolean(Cobalt.kJSAlertCancelable, false);
+			final JSONArray buttons = data.has(Cobalt.kJSAlertButtons) ? data.getJSONArray(Cobalt.kJSAlertButtons) : new JSONArray();
 
             ((Activity) mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    alertDialog.show();
+                    try {
+                        final AlertDialog alertDialog = new AlertDialog.Builder(mContext)
+                                                                        .setTitle(title)
+                                                                        .setMessage(message)
+                                                                        .create();
+                        alertDialog.setCancelable(cancelable);
+
+                        if (buttons.length() == 0) {
+                            alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if (callback != null) {
+                                        try {
+                                            JSONObject data = new JSONObject();
+                                            data.put(Cobalt.kJSAlertButtonIndex, 0);
+                                            sendCallback(callback, data);
+                                        }
+                                        catch (JSONException exception) {
+                                            if (Cobalt.DEBUG) Log.e(Cobalt.TAG, "Alert - onClick: JSONException");
+                                            exception.printStackTrace();
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            int buttonsLength = Math.min(buttons.length(), 3);
+                            for (int i = 0; i < buttonsLength; i++) {
+                                int buttonId;
+
+                                switch (i) {
+                                    case 0:
+                                    default:
+                                        buttonId = DialogInterface.BUTTON_NEGATIVE;
+                                        break;
+                                    case 1:
+                                        buttonId = DialogInterface.BUTTON_NEUTRAL;
+                                        break;
+                                    case 2:
+                                        buttonId = DialogInterface.BUTTON_POSITIVE;
+                                        break;
+                                }
+
+                                alertDialog.setButton(buttonId, buttons.getString(i), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        if (callback != null) {
+                                            int buttonIndex;
+                                            switch (which) {
+                                                case DialogInterface.BUTTON_NEGATIVE:
+                                                default:
+                                                    buttonIndex = 0;
+                                                    break;
+                                                case DialogInterface.BUTTON_NEUTRAL:
+                                                    buttonIndex = 1;
+                                                    break;
+                                                case DialogInterface.BUTTON_POSITIVE:
+                                                    buttonIndex = 2;
+                                                    break;
+                                            }
+
+                                            try {
+                                                JSONObject data = new JSONObject();
+                                                data.put(Cobalt.kJSAlertButtonIndex, buttonIndex);
+                                                sendCallback(callback, data);
+                                            }
+                                            catch (JSONException exception) {
+                                                if (Cobalt.DEBUG) Log.e(Cobalt.TAG, "Alert - onClick: JSONException");
+                                                exception.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        alertDialog.show();
+                    }
+                    catch (JSONException exception) {
+                        if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - showAlertDialog: JSONException");
+                        exception.printStackTrace();
+                    }
                 }
             });
 		} 

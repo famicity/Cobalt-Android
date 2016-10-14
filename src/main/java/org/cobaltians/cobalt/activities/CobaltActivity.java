@@ -908,7 +908,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 	 * This method should NOT be overridden in subclasses.
 	 */
 	public void back() {
-		runOnUiThread(new Runnable() {
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 backWithSuper();
@@ -985,14 +985,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 }
 
                 if (popToControllerFound) {
-                    final int finalPopToControllerIndex = popToControllerIndex;
-                    while (finalPopToControllerIndex + 1 < sActivitiesArrayList.size()) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                sActivitiesArrayList.get(finalPopToControllerIndex + 1).finish();
-                            }
-                        });
+                    while (popToControllerIndex + 1 < sActivitiesArrayList.size()) {
+                        sActivitiesArrayList.get(popToControllerIndex + 1).finish();
                     }
                 }
                 else if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - popTo: controller " + controller + (page == null ? "" : " with page " + page) + " not found in history. Abort.");

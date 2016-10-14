@@ -91,7 +91,7 @@ public class CobaltFlipperFragment extends CobaltFragment implements IGestureLis
 	}
 	
 	@Override
-	protected void onUnhandledMessage(JSONObject message) { }
+	protected boolean onUnhandledMessage(JSONObject message) { return false; }
 	
 	/********************************************************
 	 * SWIPE
