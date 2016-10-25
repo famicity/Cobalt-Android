@@ -531,7 +531,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
             String type = jsonObj.optString(Cobalt.kJSType, null);
 			if (type != null) {
                 final JSONObject data;
-                String callback;
+                final String callback;
                 String action;
 
                 switch (type) {
@@ -556,10 +556,19 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     // EVENT
                     case Cobalt.JSTypeEvent:
                         try {
-                            String event = jsonObj.getString(Cobalt.kJSEvent);
+                            final String event = jsonObj.getString(Cobalt.kJSEvent);
                             data = jsonObj.optJSONObject(Cobalt.kJSData);
                             callback = jsonObj.optString(Cobalt.kJSCallback, null);
-                            onUnhandledEvent(event, data, callback);
+
+                            if (mContext != null) {
+                                ((Activity) mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        onUnhandledEvent(event, data, callback);
+                                    }
+                                });
+                            }
+
                             messageHandled = true;
                         }
                         catch(JSONException exception) {
@@ -743,7 +752,14 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
             // UNHANDLED MESSAGE
             if (! messageHandled) {
-                onUnhandledMessage(jsonObj);
+                if (mContext != null) {
+                    ((Activity) mContext).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            onUnhandledMessage(jsonObj);
+                        }
+                    });
+                }
             }
 		} 
 		catch (JSONException exception) {
@@ -784,7 +800,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
     protected void onReady() { }
 
-	private boolean handleCallback(String callback, JSONObject data) {
+	private boolean handleCallback(final String callback, final JSONObject data) {
         switch(callback) {
             case Cobalt.JSCallbackOnBackButtonPressed:
                 try {
@@ -814,7 +830,14 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 });
                 return true;
             default:
-                onUnhandledCallback(callback, data);
+                if (mContext != null) {
+                    ((Activity) mContext).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            onUnhandledCallback(callback, data);
+                        }
+                    });
+                }
                 return true;
         }
 	}
