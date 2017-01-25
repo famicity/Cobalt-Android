@@ -381,10 +381,10 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 */
 	private void executeScriptInWebView(final JSONObject jsonObj) {
         if (jsonObj != null) {
-            Handler webViewHandler = mWebView.getHandler();
-			if (webViewHandler != null
+			if (mWebView != null
+                && mWebView.getHandler() != null
                 && mCobaltIsReady) {
-                webViewHandler.post(new Runnable() {
+                mWebView.getHandler().post(new Runnable() {
                     @Override
                     public void run() {
                         // Line & paragraph separators are not JSON compliant but supported by JSONObject
