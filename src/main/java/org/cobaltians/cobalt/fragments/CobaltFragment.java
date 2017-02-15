@@ -348,7 +348,11 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         String page = (getPage() != null) ? getPage() : "index.html";
 		
 		if (mPreloadOnCreate) {
-			loadFileFromAssets(page);
+			if (page.startsWith("https://") || page.startsWith("http://")) {
+                mWebView.loadUrl(page);
+            } else {
+                loadFileFromAssets(page);
+            }
 		}
 	}
 
