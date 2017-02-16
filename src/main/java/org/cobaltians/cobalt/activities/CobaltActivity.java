@@ -87,6 +87,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     protected HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
     protected HashMap<Integer, String> mMenuItemsIdMap = new HashMap<>();
     protected HashMap<String, MenuItem> mMenuItemByNameMap = new HashMap<>();
+	protected CobaltFragment mFirstFragment;
 
     /***********************************************************************************************
      *
@@ -143,6 +144,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
             if (fragment != null) {
                 fragment.setArguments(extras);
+				mFirstFragment = fragment;
                 mAnimatedTransition = bundle.getBoolean(Cobalt.kJSAnimated, true);
 
                 if (mAnimatedTransition) {
@@ -1028,7 +1030,12 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
     @Override
     public void onPressed(String name) {
-        CobaltFragment fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
+		CobaltFragment fragment;
+        if (mFirstFragment != null) {
+            fragment = mFirstFragment;
+        } else {
+            fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
+        }
         JSONObject message = new JSONObject();
         JSONObject data = new JSONObject();
         try {
