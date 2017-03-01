@@ -192,7 +192,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         Fragment fragment = getSupportFragmentManager().findFragmentById(getFragmentContainerId());
         if (fragment != null
             && CobaltFragment.class.isAssignableFrom(fragment.getClass())) {
-            ((CobaltFragment) fragment).executeWaitingCalls();
+            ((CobaltFragment) fragment).executeToJSWaitingCalls();
             ((CobaltFragment) fragment).sendEvent(Cobalt.JSEventOnAppForeground, null, null);
         }
         else if (Cobalt.DEBUG) Log.i(Cobalt.TAG,    TAG + " - onAppForeground: no fragment container found \n"
