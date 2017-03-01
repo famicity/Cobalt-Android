@@ -90,7 +90,9 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     protected CobaltSwipeRefreshLayout mSwipeRefreshLayout;
 
 	protected Handler mHandler = new Handler();
-	private ArrayList<JSONObject> mWaitingJavaScriptCallsQueue = new ArrayList<>();
+	private ArrayList<JSONObject> mToJSWaitingCallsQueue = new ArrayList<>();
+    private ArrayList<String> mFromJSWaitingCallsQueue = new ArrayList<>();
+    private boolean mFromJSWaitingCallsQueueRunning = false;
 	
 	private boolean mPreloadOnCreate = true;
 	private boolean mCobaltIsReady = false;
@@ -164,14 +166,22 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     public void onResume() {
         super.onResume();
 
-        executeWaitingCalls();
+        executeFromJSWaitingCalls();
+        executeToJSWaitingCalls();
 
         JSONObject data = ((CobaltActivity) mContext).getDataNavigation();
         sendEvent(Cobalt.JSEventOnPageShown, data, null);
         ((CobaltActivity) mContext).setDataNavigation(null);
     }
-	
-	@Override
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        mFromJSWaitingCallsQueueRunning = false;
+    }
+
+    @Override
 	public void onStop() {
 		super.onStop();
 		
@@ -329,7 +339,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                executeWaitingCalls();
+                executeToJSWaitingCalls();
             }
         };
 
@@ -402,21 +412,21 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 			}
 			else {
 				if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeScriptInWebView: adding message to queue: " + jsonObj);
-				mWaitingJavaScriptCallsQueue.add(jsonObj);
+                mToJSWaitingCallsQueue.add(jsonObj);
 			}
 		}
         else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - executeScriptInWebView: jsonObj is null!");
 	}
 
-	public void executeWaitingCalls() {
-        ArrayList<JSONObject> waitingJavaScriptCallsQueue = new ArrayList<>(mWaitingJavaScriptCallsQueue);
-		int waitingJavaScriptCallsQueueLength = waitingJavaScriptCallsQueue.size();
+    public void executeToJSWaitingCalls() {
+        ArrayList<JSONObject> toJSWaitingCallsQueue = new ArrayList<>(mToJSWaitingCallsQueue);
+		int toJSWaitingCallsQueueLength = toJSWaitingCallsQueue.size();
 
-        mWaitingJavaScriptCallsQueue.clear();
+        mToJSWaitingCallsQueue.clear();
 
-		for (int i = 0 ; i < waitingJavaScriptCallsQueueLength ; i++) {
-			if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeWaitingCalls: execute " + waitingJavaScriptCallsQueue.get(i).toString());
-			executeScriptInWebView(waitingJavaScriptCallsQueue.get(i));
+		for (int i = 0 ; i < toJSWaitingCallsQueueLength ; i++) {
+			if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeToJSWaitingCalls: execute " + toJSWaitingCallsQueue.get(i).toString());
+			executeScriptInWebView(toJSWaitingCallsQueue.get(i));
 		}
 	}
 
@@ -522,6 +532,11 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	// This method must be public !!!
 	@JavascriptInterface
 	public void onCobaltMessage(String message) {
+        if (! mFromJSWaitingCallsQueueRunning) {
+            mFromJSWaitingCallsQueue.add(message);
+            return;
+        }
+
 		try {
 			final JSONObject jsonObj = new JSONObject(message);
 
@@ -775,7 +790,21 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         }
         */
 	}
-	
+
+    private void executeFromJSWaitingCalls() {
+        mFromJSWaitingCallsQueueRunning = true;
+
+        ArrayList<String> fromJSWaitingCallsQueue = new ArrayList<>(mFromJSWaitingCallsQueue);
+        int fromJSWaitingCallsQueueLength = fromJSWaitingCallsQueue.size();
+
+        mFromJSWaitingCallsQueue.clear();
+
+        for (int i = 0 ; i < fromJSWaitingCallsQueueLength ; i++) {
+            if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeFromJSWaitingCalls: execute " + fromJSWaitingCallsQueue.get(i));
+            onCobaltMessage(fromJSWaitingCallsQueue.get(i));
+        }
+    }
+
 	private void onCobaltIsReady(String version) {
         String androidVersion = getResources().getString(R.string.version_name);
         if (! androidVersion.equals(version)) {
@@ -788,7 +817,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         }
 
 		mCobaltIsReady = true;
-		executeWaitingCalls();
+        executeToJSWaitingCalls();
 
         ((Activity) mContext).runOnUiThread(new Runnable() {
             @Override
