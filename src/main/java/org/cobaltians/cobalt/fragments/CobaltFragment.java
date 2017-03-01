@@ -207,6 +207,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     @Override
     public void onDetach() {
         mContext = null;
+        super.onDetach();
     }
 
 	/****************************************************************************************
