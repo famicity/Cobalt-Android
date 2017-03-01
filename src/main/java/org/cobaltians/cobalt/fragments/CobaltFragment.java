@@ -92,7 +92,6 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	protected Handler mHandler = new Handler();
 	private ArrayList<JSONObject> mToJSWaitingCallsQueue = new ArrayList<>();
     private ArrayList<String> mFromJSWaitingCallsQueue = new ArrayList<>();
-    private boolean mFromJSWaitingCallsQueueRunning = false;
 	
 	private boolean mPreloadOnCreate = true;
 	private boolean mCobaltIsReady = false;
@@ -111,6 +110,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     public void onAttach(Context context) {
         super.onAttach(context);
         mContext = context;
+
+        executeFromJSWaitingCalls();
     }
 
     @Override
@@ -166,19 +167,11 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     public void onResume() {
         super.onResume();
 
-        executeFromJSWaitingCalls();
         executeToJSWaitingCalls();
 
         JSONObject data = ((CobaltActivity) mContext).getDataNavigation();
         sendEvent(Cobalt.JSEventOnPageShown, data, null);
         ((CobaltActivity) mContext).setDataNavigation(null);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        mFromJSWaitingCallsQueueRunning = false;
     }
 
     @Override
@@ -210,7 +203,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 		
 		mPluginManager.onFragmentDestroyed(mContext, this);
 	}
-    
+
+    @Override
+    public void onDetach() {
+        mContext = null;
+    }
+
 	/****************************************************************************************
 	 * LIFECYCLE HELPERS
 	 ***************************************************************************************/
@@ -532,7 +530,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	// This method must be public !!!
 	@JavascriptInterface
 	public void onCobaltMessage(String message) {
-        if (! mFromJSWaitingCallsQueueRunning) {
+        if (mContext == null) {
             mFromJSWaitingCallsQueue.add(message);
             return;
         }
@@ -575,14 +573,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             data = jsonObj.optJSONObject(Cobalt.kJSData);
                             callback = jsonObj.optString(Cobalt.kJSCallback, null);
 
-                            if (mContext != null) {
-                                ((Activity) mContext).runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        onUnhandledEvent(event, data, callback);
-                                    }
-                                });
-                            }
+                            ((Activity) mContext).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    onUnhandledEvent(event, data, callback);
+                                }
+                            });
 
                             messageHandled = true;
                         }
@@ -767,14 +763,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
             // UNHANDLED MESSAGE
             if (! messageHandled) {
-                if (mContext != null) {
-                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            onUnhandledMessage(jsonObj);
-                        }
-                    });
-                }
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onUnhandledMessage(jsonObj);
+                    }
+                });
             }
 		} 
 		catch (JSONException exception) {
@@ -792,8 +786,6 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	}
 
     private void executeFromJSWaitingCalls() {
-        mFromJSWaitingCallsQueueRunning = true;
-
         ArrayList<String> fromJSWaitingCallsQueue = new ArrayList<>(mFromJSWaitingCallsQueue);
         int fromJSWaitingCallsQueueLength = fromJSWaitingCallsQueue.size();
 
@@ -859,14 +851,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                 });
                 return true;
             default:
-                if (mContext != null) {
-                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            onUnhandledCallback(callback, data);
-                        }
-                    });
-                }
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onUnhandledCallback(callback, data);
+                    }
+                });
                 return true;
         }
 	}
@@ -961,14 +951,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 final String name = data.getString(Cobalt.kActionName);
                                 final String badge = data.getString(Cobalt.kActionBadge);
 
-                                if (mContext != null) {
-                                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ((CobaltActivity) mContext).setBadgeMenuItem(name, badge);
-                                        }
-                                    });
-                                }
+                                ((Activity) mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ((CobaltActivity) mContext).setBadgeMenuItem(name, badge);
+                                    }
+                                });
 
                                 messageHandled = true;
                             }
@@ -985,14 +973,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 final String nameContent = data.getString(Cobalt.kActionName);
                                 final JSONObject content = data.getJSONObject(Cobalt.kContent);
 
-                                if (mContext != null) {
-                                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ((CobaltActivity) mContext).setContentMenuItem(nameContent, content);
-                                        }
-                                    });
-                                }
+                                ((Activity) mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ((CobaltActivity) mContext).setContentMenuItem(nameContent, content);
+                                    }
+                                });
 
                                 messageHandled = true;
                             }
@@ -1008,14 +994,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             try {
                                 final JSONObject visible = data.getJSONObject(Cobalt.kVisible);
 
-                                if (mContext != null) {
-                                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ((CobaltActivity) mContext).setActionBarVisible(visible);
-                                        }
-                                    });
-                                }
+                                ((Activity) mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ((CobaltActivity) mContext).setActionBarVisible(visible);
+                                    }
+                                });
 
                                 messageHandled = true;
                             }
@@ -1030,14 +1014,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             try {
                                 final JSONObject barsContent = data.getJSONObject(Cobalt.kContent);
 
-                                if (mContext != null) {
-                                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ((CobaltActivity) mContext).setBarContent(barsContent);
-                                        }
-                                    });
-                                }
+                                ((Activity) mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ((CobaltActivity) mContext).setBarContent(barsContent);
+                                    }
+                                });
 
                                 messageHandled = true;
                             }
@@ -1053,14 +1035,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 final String actionName = data.getString(Cobalt.kActionName);
                                 final boolean actionVisible = data.getBoolean(Cobalt.kVisible);
 
-                                if (mContext != null) {
-                                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ((CobaltActivity) mContext).setActionItemVisible(actionName, actionVisible);
-                                        }
-                                    });
-                                }
+                                ((Activity) mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ((CobaltActivity) mContext).setActionItemVisible(actionName, actionVisible);
+                                    }
+                                });
 
                                 messageHandled = true;
                             }
@@ -1077,14 +1057,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 final String actionNameEnabled = data.getString(Cobalt.kActionName);
                                 final boolean actionEnabled = data.getBoolean(Cobalt.kEnabled);
 
-                                if (mContext != null) {
-                                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ((CobaltActivity) mContext).setActionItemEnabled(actionNameEnabled, actionEnabled);
-                                        }
-                                    });
-                                }
+                                ((Activity) mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ((CobaltActivity) mContext).setActionItemEnabled(actionNameEnabled, actionEnabled);
+                                    }
+                                });
 
                                 messageHandled = true;
                             }
@@ -1109,29 +1087,27 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	}
 
     protected void setBars(final JSONObject actionBar) {
-        if (mContext != null) {
-            Intent intent = ((CobaltActivity) mContext).getIntent();
-            Bundle bundle = intent.getExtras();
-            if (bundle == null) {
-                bundle = new Bundle();
-            }
-            Bundle extras = bundle.getBundle(Cobalt.kExtras);
-            if (extras == null) {
-                extras = new Bundle();
-                bundle.putBundle(Cobalt.kExtras, extras);
-            }
-
-            extras.putString(Cobalt.kBars, actionBar.toString());
-            intent.putExtras(bundle);
-
-            ((CobaltActivity) mContext).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ((CobaltActivity) mContext).setupBars(actionBar);
-                    ((CobaltActivity) mContext).supportInvalidateOptionsMenu();
-                }
-            });
+        Intent intent = ((CobaltActivity) mContext).getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle == null) {
+            bundle = new Bundle();
         }
+        Bundle extras = bundle.getBundle(Cobalt.kExtras);
+        if (extras == null) {
+            extras = new Bundle();
+            bundle.putBundle(Cobalt.kExtras, extras);
+        }
+
+        extras.putString(Cobalt.kBars, actionBar.toString());
+        intent.putExtras(bundle);
+
+        ((CobaltActivity) mContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((CobaltActivity) mContext).setupBars(actionBar);
+                ((CobaltActivity) mContext).supportInvalidateOptionsMenu();
+            }
+        });
     }
 
 	protected abstract boolean onUnhandledMessage(JSONObject message);
