@@ -92,7 +92,9 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	protected Handler mHandler = new Handler();
 	private ArrayList<JSONObject> mToJSWaitingCallsQueue = new ArrayList<>();
     private ArrayList<String> mFromJSWaitingCallsQueue = new ArrayList<>();
-	
+    private ArrayList<AlertDialog> mPendingAlertDialogs = new ArrayList<>();
+    private boolean mActive = false;
+
 	private boolean mPreloadOnCreate = true;
 	private boolean mCobaltIsReady = false;
 
@@ -101,6 +103,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	private CobaltPluginManager mPluginManager;
 
     private boolean mAllowCommit;
+
 
     /**************************************************************************************************
 	 * LIFECYCLE
@@ -167,11 +170,19 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     public void onResume() {
         super.onResume();
 
+        showPendingAlertDialogs();
         executeToJSWaitingCalls();
 
         JSONObject data = ((CobaltActivity) mContext).getDataNavigation();
         sendEvent(Cobalt.JSEventOnPageShown, data, null);
         ((CobaltActivity) mContext).setDataNavigation(null);
+    }
+
+    @Override
+    public void onPause() {
+        mActive = false;
+
+        super.onPause();
     }
 
     @Override
@@ -1514,7 +1525,12 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             }
                         }
 
-                        alertDialog.show();
+                        if (mActive) {
+                            alertDialog.show();
+                        }
+                        else {
+                            mPendingAlertDialogs.add(alertDialog);
+                        }
                     }
                     catch (JSONException exception) {
                         if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - showAlertDialog: JSONException");
@@ -1528,7 +1544,24 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 			exception.printStackTrace();
 		}
 	}
-	
+
+    private void showPendingAlertDialogs() {
+        mActive = true;
+
+        ArrayList<AlertDialog> pendingAlertDialogs = new ArrayList<>(mPendingAlertDialogs);
+        int pendingAlertDialogsCount = pendingAlertDialogs.size();
+
+        mPendingAlertDialogs.clear();
+
+        for (int i = 0 ; i < pendingAlertDialogsCount ; i++) {
+            AlertDialog alertDialog = pendingAlertDialogs.get(i);
+            if (Cobalt.DEBUG) {
+                Log.i(Cobalt.TAG, TAG + " - showPendingAlertDialogs: " + i + "/" + pendingAlertDialogsCount);
+            }
+            alertDialog.show();
+        }
+    }
+
 	/*************************************************************************************
      * DATE PICKER
      ************************************************************************************/
