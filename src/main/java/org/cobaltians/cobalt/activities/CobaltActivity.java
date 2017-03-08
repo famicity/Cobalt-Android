@@ -943,6 +943,36 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 		}
         else if (Cobalt.DEBUG) Log.e(Cobalt.TAG,   TAG + " - onWebLayerDismiss: no fragment container found");
 	}
+	
+	
+	/**
+     * Called when a {@link CobaltWebLayerFragment} is loading a page
+     * This method may be overridden in subclasses.
+     */
+    public void onWebLayerLoading() {
+        CobaltFragment fragment;
+        if (mFirstFragment != null) {
+            fragment = mFirstFragment;
+        } else {
+            fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
+        }
+        fragment.sendEvent(Cobalt.JSEventWebLayerOnLoading, null, null);
+    }
+
+    /**
+     * Called when a {@link CobaltWebLayerFragment} has finished loading a page
+     * This method may be overridden in subclasses.
+     */
+    public void onWebLayerLoaded() {
+        CobaltFragment fragment;
+        if (mFirstFragment != null) {
+            fragment = mFirstFragment;
+        } else {
+            fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
+        }
+        fragment.sendEvent(Cobalt.JSEventWebLayerOnLoaded, null, null);
+    }
+
 
     public void popTo(String controller, String page, JSONObject data){
         Intent popToIntent = Cobalt.getInstance(this).getIntentForController(controller, page);

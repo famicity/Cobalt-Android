@@ -228,6 +228,9 @@ public class Cobalt {
     public final static String JSActionWebLayerDismiss = "dismiss";
     public final static String kJSWebLayerFadeDuration = "fadeDuration";
     public final static String JSEventWebLayerOnDismiss = "onWebLayerDismissed";
+	public final static String JSEventWebLayerOnLoading = "onWebLayerLoading";
+    public final static String JSEventWebLayerOnLoaded = "onWebLayerLoaded";
+	
 
     // PULL TO REFRESH
     public final static String JSEventPullToRefresh = "pullToRefresh";
