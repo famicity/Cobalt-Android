@@ -84,31 +84,7 @@ public class CobaltWebLayerFragment extends CobaltFragment {
 	
 	@Override
 	protected boolean onUnhandledMessage(final JSONObject message) {
-        try {
-            String type = message.optString(Cobalt.kJSType);
-
-            if (type.equals(Cobalt.JSTypeWebLayer)) {
-                String action = message.getString(Cobalt.kJSAction);
-
-                if (action.equals(Cobalt.JSActionWebLayerDismiss)) {
-                    mHandler.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            dismissWebLayer(message);
-                        }
-                    });
-
-					return true;
-                }
-            }
-        }
-        catch (JSONException exception) {
-            if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onUnhandledMessage: JSONException");
-            exception.printStackTrace();
-        }
-
-		return false;
+        return false;
     }
 	
 	@Override
