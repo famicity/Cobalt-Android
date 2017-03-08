@@ -766,15 +766,22 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 showWebLayer(data);
                                 messageHandled = true;
                             }
+                            // DISMISS
                             if (action.equals(Cobalt.JSActionWebLayerDismiss)) {
-                                // Dismiss current Web layer if one is already shown
-                                // sent data are ignored in this case.
-                                CobaltActivity activity = (CobaltActivity) mContext;
-                                Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getFragmentContainerId());
-                                if (currentFragment != null
-                                    && CobaltWebLayerFragment.class.isAssignableFrom(currentFragment.getClass())) {
-                                    ((CobaltWebLayerFragment) currentFragment).dismissWebLayer(null);
+                                if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
+                                    CobaltActivity activity = (CobaltActivity) mContext;
+                                    final Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getFragmentContainerId());
+                                    if (currentFragment != null
+                                        && CobaltWebLayerFragment.class.isAssignableFrom(currentFragment.getClass())) {
+                                        activity.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                ((CobaltWebLayerFragment) currentFragment).dismissWebLayer(jsonObj);
+                                            }
+                                        });
+                                    }
                                 }
+
                                 messageHandled = true;
                             }
                         }
