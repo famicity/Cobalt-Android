@@ -1098,7 +1098,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
             ((CobaltActivity) mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    ((CobaltActivity) mContext).setupBars(actionBar);
+                    ((CobaltActivity) mContext).setupBars(actionBar, CobaltFragment.this);
                     ((CobaltActivity) mContext).supportInvalidateOptionsMenu();
                 }
             });

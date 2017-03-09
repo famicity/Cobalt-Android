@@ -16,12 +16,12 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.cobaltians.cobalt.fragments.CobaltFragment;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.cobaltians.cobalt.Cobalt;
 import org.cobaltians.cobalt.R;
-import org.cobaltians.cobalt.activities.CobaltActivity;
 import org.cobaltians.cobalt.font.CobaltFontManager;
 
 import java.lang.ref.WeakReference;
@@ -36,7 +36,8 @@ public class ActionViewMenuItem extends RelativeLayout {
     protected String mName;
     protected JSONObject mAction;
     protected int mBarsColor;
-    protected ActionViewMenuItemListener mListener;
+    protected WeakReference<ActionViewMenuItemListener> mListener;
+    protected WeakReference<CobaltFragment> mFragmentHostingWebView;
     protected Context mContext;
 
     protected TextView mBadgeTv;
@@ -84,8 +85,16 @@ public class ActionViewMenuItem extends RelativeLayout {
         init();
     }
 
-    public void setActionViewMenuItemListener(WeakReference<CobaltActivity> weakActivity) {
-        mListener = weakActivity.get();
+    public void setActionViewMenuItemListener(ActionViewMenuItemListener listener) {
+        mListener = new WeakReference<>(listener);
+    }
+
+    public CobaltFragment getFragmentHostingWebView() {
+        return mFragmentHostingWebView.get();
+    }
+
+    public void setFragmentHostingWebView(CobaltFragment fragment) {
+        mFragmentHostingWebView = new WeakReference<>(fragment);
     }
 
     protected void init() {
@@ -160,7 +169,13 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mImageButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ((CobaltActivity)mContext).onPressed(mName);
+                        ActionViewMenuItemListener listener = mListener.get();
+                        if (listener != null) {
+                            listener.onPressed(mName);
+                        }
+                        else if (Cobalt.DEBUG){
+                            Log.i(Cobalt.TAG, TAG + "OnClick: listener == null");
+                        }
                     }
                 });
                 // TODO: add toast tooltip OnLongClickListener with title anchored on MenuItem
@@ -176,7 +191,13 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ((CobaltActivity) mContext).onPressed(mName);
+                        ActionViewMenuItemListener listener = mListener.get();
+                        if (listener != null) {
+                            listener.onPressed(mName);
+                        }
+                        else if (Cobalt.DEBUG){
+                            Log.i(Cobalt.TAG, TAG + "OnClick: listener == null");
+                        }
                     }
                 });
                 // TODO: apply color for items in overflow popup
