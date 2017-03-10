@@ -87,6 +87,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     protected HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
     protected HashMap<Integer, String> mMenuItemsIdMap = new HashMap<>();
     protected HashMap<String, MenuItem> mMenuItemByNameMap = new HashMap<>();
+	private CobaltFragment mMenuListener;
 
     /***********************************************************************************************
      *
@@ -121,25 +122,9 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             }
         }
 
-        if (extras.containsKey(Cobalt.kBars)) {
-            try {
-                JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
-                setupBars(actionBar);
-            }
-            catch (JSONException exception) {
-                setupBars(null);
-                if (Cobalt.DEBUG) {
-                    Log.e(Cobalt.TAG, TAG + " - onCreate: bars configuration parsing failed. " + extras.getString(Cobalt.kBars));
-                }
-                exception.printStackTrace();
-            }
-        }
-        else {
-            setupBars(null);
-        }
-
-		if (savedInstanceState == null) {
+        if (savedInstanceState == null) {
             CobaltFragment fragment = getFragment();
+            mMenuListener = fragment;
 
             if (fragment != null) {
                 fragment.setArguments(extras);
@@ -159,12 +144,36 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 }
                 else overridePendingTransition(0, 0);
             }
+            else if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG, TAG + " - onCreate: getFragment() returned null");
+            }
 
             if (findViewById(getFragmentContainerId()) != null) {
                 getSupportFragmentManager().beginTransaction().replace(getFragmentContainerId(), fragment).commit();
             }
-            else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: fragment container not found");
-        } else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onCreate: getFragment() returned null");
+            else if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG, TAG + " - onCreate: fragment container not found");
+            }
+        }
+
+        if (extras.containsKey(Cobalt.kBars)) {
+            try {
+                JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(getFragmentContainerId());
+                setupBars(actionBar,    currentFragment != null && CobaltFragment.class.isAssignableFrom(currentFragment.getClass()) ?
+                        (CobaltFragment) currentFragment : mMenuListener);
+            }
+            catch (JSONException exception) {
+                setupBars(null, null);
+                if (Cobalt.DEBUG) {
+                    Log.e(Cobalt.TAG, TAG + " - onCreate: bars configuration parsing failed. " + extras.getString(Cobalt.kBars));
+                }
+                exception.printStackTrace();
+            }
+        }
+        else {
+            setupBars(null, null);
+        }
     }
 
 
@@ -291,6 +300,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         return true;
     }
 
+    // TODO: bars fragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
@@ -341,7 +351,9 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         return R.id.bottom_bar;
     }
 
-    public void setupBars(JSONObject configuration) {
+    public void setupBars(JSONObject configuration, CobaltFragment currentFragment) {
+        mMenuListener = currentFragment;
+
         Toolbar topBar = (Toolbar) findViewById(getTopBarId());
         // TODO: use LinearLayout for bottomBar instead to handle groups
         //LinearLayout bottomBar = (LinearLayout) findViewById(getBottomBarId());
@@ -564,6 +576,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 exception.printStackTrace();
             }
         }
+
+        mMenuListener = null;
     }
 
     protected void addGroup(Menu menu, int order, JSONArray actions, int actionId, String position, int color) {
@@ -817,8 +831,10 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             }
             MenuItemCompat.setShowAsAction(menuItem, showAsAction);
 
+            // TODO: bars fragment
             ActionViewMenuItem actionView = new ActionViewMenuItem(this, action, barsColor);
-            actionView.setActionViewMenuItemListener(new WeakReference<>(this));
+            actionView.setActionViewMenuItemListener(this);
+            actionView.setFragmentHostingWebView(mMenuListener);
 
             MenuItemCompat.setActionView(menuItem, actionView);
             menuItem.setVisible(visible);
@@ -1056,20 +1072,27 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
      *
      **********************************************************************************************/
 
+    // TODO: bars fragment
     @Override
     public void onPressed(String name) {
-        CobaltFragment fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
-        JSONObject message = new JSONObject();
-        JSONObject data = new JSONObject();
-        try {
-            message.put(Cobalt.kJSType, Cobalt.JSTypeUI);
-            message.put(Cobalt.kJSUIControl, Cobalt.JSControlBars);
-            data.put(Cobalt.kJSAction, Cobalt.JSActionActionPressed);
-            data.put(Cobalt.kJSActionName, name);
-            message.put(Cobalt.kJSData, data);
-            fragment.sendMessage(message);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        CobaltFragment fragment = mMenuItemsHashMap.get(name).getFragmentHostingWebView();
+        if (fragment != null) {
+            JSONObject message = new JSONObject();
+            JSONObject data = new JSONObject();
+            try {
+                message.put(Cobalt.kJSType, Cobalt.JSTypeUI);
+                message.put(Cobalt.kJSUIControl, Cobalt.JSControlBars);
+                data.put(Cobalt.kJSAction, Cobalt.JSActionActionPressed);
+                data.put(Cobalt.kJSActionName, name);
+                message.put(Cobalt.kJSData, data);
+                fragment.sendMessage(message);
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (Cobalt.DEBUG) {
+            Log.i(Cobalt.TAG, TAG + "onPressed " + name + ": fragment == null");
         }
     }
 }

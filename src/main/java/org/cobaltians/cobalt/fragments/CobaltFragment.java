@@ -368,7 +368,11 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         String page = (getPage() != null) ? getPage() : "index.html";
 		
 		if (mPreloadOnCreate) {
-			loadFileFromAssets(page);
+			if (page.startsWith("https://") || page.startsWith("http://")) {
+                mWebView.loadUrl(page);
+            } else {
+                loadFileFromAssets(page);
+            }
 		}
 	}
 
@@ -762,6 +766,24 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                 showWebLayer(data);
                                 messageHandled = true;
                             }
+                            // DISMISS
+                            if (action.equals(Cobalt.JSActionWebLayerDismiss)) {
+                                if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
+                                    CobaltActivity activity = (CobaltActivity) mContext;
+                                    final Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getFragmentContainerId());
+                                    if (currentFragment != null
+                                        && CobaltWebLayerFragment.class.isAssignableFrom(currentFragment.getClass())) {
+                                        activity.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                ((CobaltWebLayerFragment) currentFragment).dismissWebLayer(jsonObj);
+                                            }
+                                        });
+                                    }
+                                }
+
+                                messageHandled = true;
+                            }
                         }
                         catch(JSONException exception) {
                             if (Cobalt.DEBUG) Log.w(Cobalt.TAG, TAG + " - onCobaltMessage: " +
@@ -1116,7 +1138,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         ((CobaltActivity) mContext).runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ((CobaltActivity) mContext).setupBars(actionBar);
+                ((CobaltActivity) mContext).setupBars(actionBar, CobaltFragment.this);
                 ((CobaltActivity) mContext).supportInvalidateOptionsMenu();
             }
         });
