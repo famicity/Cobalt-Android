@@ -124,6 +124,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 
         if (savedInstanceState == null) {
             CobaltFragment fragment = getFragment();
+            mMenuListener = fragment;
 
             if (fragment != null) {
                 fragment.setArguments(extras);
@@ -160,7 +161,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
                 JSONObject actionBar = new JSONObject(extras.getString(Cobalt.kBars));
                 Fragment currentFragment = getSupportFragmentManager().findFragmentById(getFragmentContainerId());
                 setupBars(actionBar,    currentFragment != null && CobaltFragment.class.isAssignableFrom(currentFragment.getClass()) ?
-                                        (CobaltFragment) currentFragment : null);
+                        (CobaltFragment) currentFragment : mMenuListener);
             }
             catch (JSONException exception) {
                 setupBars(null, null);
