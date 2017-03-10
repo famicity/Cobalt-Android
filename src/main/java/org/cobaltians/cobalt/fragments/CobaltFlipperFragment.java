@@ -127,27 +127,22 @@ public class CobaltFlipperFragment extends CobaltFragment implements IGestureLis
 	}
 
 	private void swipe(final int direction) {
-		mHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				JSONObject jsonObj = new JSONObject();
-				try {
-					jsonObj.put(Cobalt.kJSType, Cobalt.JSTypeEvent);
-					if (direction == GESTURE_SWIPE_LEFT) {
-						jsonObj.put(Cobalt.kJSEvent, JSEventSwipeLeft);
-						if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - swipe: next");
-					}
-					else if (direction == GESTURE_SWIPE_RIGHT) {
-						jsonObj.put(Cobalt.kJSEvent, JSEventSwipeRight);
-						if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - swipe: previous");
-					}
-					sendMessage(jsonObj);
-				}
-				catch (JSONException exception) {
-					exception.printStackTrace();
-				}
+		JSONObject jsonObj = new JSONObject();
+		try {
+			jsonObj.put(Cobalt.kJSType, Cobalt.JSTypeEvent);
+			if (direction == GESTURE_SWIPE_LEFT) {
+				jsonObj.put(Cobalt.kJSEvent, JSEventSwipeLeft);
+				if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - swipe: next");
 			}
-		});
+			else if (direction == GESTURE_SWIPE_RIGHT) {
+				jsonObj.put(Cobalt.kJSEvent, JSEventSwipeRight);
+				if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - swipe: previous");
+			}
+			sendMessage(jsonObj);
+		}
+		catch (JSONException exception) {
+			exception.printStackTrace();
+		}
 	}
 
 	@Override

@@ -36,7 +36,6 @@ import org.cobaltians.cobalt.customviews.ActionViewMenuItemListener;
 import org.cobaltians.cobalt.customviews.BottomBar;
 import org.cobaltians.cobalt.font.CobaltFontManager;
 import org.cobaltians.cobalt.fragments.CobaltFragment;
-import org.cobaltians.cobalt.fragments.CobaltWebLayerFragment;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -300,7 +299,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         return true;
     }
 
-    // TODO: bars fragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
@@ -831,7 +829,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             }
             MenuItemCompat.setShowAsAction(menuItem, showAsAction);
 
-            // TODO: bars fragment
             ActionViewMenuItem actionView = new ActionViewMenuItem(this, action, barsColor);
             actionView.setActionViewMenuItemListener(this);
             actionView.setFragmentHostingWebView(mMenuListener);
@@ -942,54 +939,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
 	}
 
-    /***********************************************************************************************
-     *
-     * WEB LAYER DISMISS
-     *
-     **********************************************************************************************/
-
-	/**
-	 * Called when a {@link CobaltWebLayerFragment} has been dismissed.
-	 * This method may be overridden in subclasses.
-	 */
-	public void onWebLayerDismiss(String page, JSONObject data) {
-        CobaltFragment fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
-        if (fragment != null) {
-            fragment.onWebLayerDismiss(page, data);
-		}
-        else if (Cobalt.DEBUG) Log.e(Cobalt.TAG,   TAG + " - onWebLayerDismiss: no fragment container found");
-	}
-	
-	
-	/**
-     * Called when a {@link CobaltWebLayerFragment} is loading a page
-     * This method may be overridden in subclasses.
-     */
-    public void onWebLayerLoading() {
-        CobaltFragment fragment;
-        if (mFirstFragment != null) {
-            fragment = mFirstFragment;
-        } else {
-            fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
-        }
-        fragment.sendEvent(Cobalt.JSEventWebLayerOnLoading, null, null);
-    }
-
-    /**
-     * Called when a {@link CobaltWebLayerFragment} has finished loading a page
-     * This method may be overridden in subclasses.
-     */
-    public void onWebLayerLoaded() {
-        CobaltFragment fragment;
-        if (mFirstFragment != null) {
-            fragment = mFirstFragment;
-        } else {
-            fragment = (CobaltFragment) getSupportFragmentManager().findFragmentById(getFragmentContainerId());
-        }
-        fragment.sendEvent(Cobalt.JSEventWebLayerOnLoaded, null, null);
-    }
-
-
     public void popTo(String controller, String page, JSONObject data){
         Intent popToIntent = Cobalt.getInstance(this).getIntentForController(controller, page);
 
@@ -1072,7 +1021,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
      *
      **********************************************************************************************/
 
-    // TODO: bars fragment
     @Override
     public void onPressed(String name) {
         CobaltFragment fragment = mMenuItemsHashMap.get(name).getFragmentHostingWebView();

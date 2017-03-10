@@ -47,7 +47,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -89,7 +88,6 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	protected OverScrollingWebView mWebView;
     protected CobaltSwipeRefreshLayout mSwipeRefreshLayout;
 
-	protected Handler mHandler = new Handler();
 	private ArrayList<JSONObject> mToJSWaitingCallsQueue = new ArrayList<>();
     private ArrayList<String> mFromJSWaitingCallsQueue = new ArrayList<>();
     private ArrayList<AlertDialog> mPendingAlertDialogs = new ArrayList<>();
@@ -1361,6 +1359,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
             final CobaltWebLayerFragment webLayerFragment = getWebLayerFragment();
             if (webLayerFragment != null) {
+                webLayerFragment.setRootFragment(this);
                 webLayerFragment.setArguments(bundle);
 
                 ((Activity) mContext).runOnUiThread(new Runnable() {
@@ -1412,30 +1411,6 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 */
 	protected CobaltWebLayerFragment getWebLayerFragment() {
 		return new CobaltWebLayerFragment();
-	}
-	
-	/**
-	 * Called from the corresponding {@link CobaltWebLayerFragment} when dismissed.
-	 * This method may be overridden in subclasses.
-	 */
-	public void onWebLayerDismiss(final String page, final JSONObject data) {
-		mHandler.post(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					JSONObject jsonObj = new JSONObject();
-					jsonObj.put(Cobalt.kJSPage, page);
-					jsonObj.put(Cobalt.kJSData, data);
-
-					sendEvent(Cobalt.JSEventWebLayerOnDismiss, jsonObj, null);
-				} 
-				catch (JSONException exception) {
-                    if(Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onWebLayerDismiss: JSONException");
-					exception.printStackTrace();
-				}
-			}
-		});
 	}
 
     public boolean allowFragmentCommit() {
@@ -1656,13 +1631,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     }
 
     private void refreshWebView() {
-		mHandler.post(new Runnable() {
-
-			@Override
-			public void run() {
-                sendEvent(Cobalt.JSEventPullToRefresh, null, Cobalt.JSCallbackPullToRefreshDidRefresh);
-			}
-		});
+        sendEvent(Cobalt.JSEventPullToRefresh, null, Cobalt.JSCallbackPullToRefreshDidRefresh);
 	}
 	
 	private void onPullToRefreshDidRefresh() {
@@ -1693,14 +1662,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	}
 
 	private void infiniteScrollRefresh() {
-        mHandler.post(new Runnable() {
-
-            @Override
-            public void run() {
-                sendEvent(Cobalt.JSEventInfiniteScroll, null, Cobalt.JSCallbackInfiniteScrollDidRefresh);
-                mIsInfiniteScrollRefreshing = true;
-            }
-        });
+        sendEvent(Cobalt.JSEventInfiniteScroll, null, Cobalt.JSCallbackInfiniteScrollDidRefresh);
+        mIsInfiniteScrollRefreshing = true;
 	}
 	
 	private void onInfiniteScrollDidRefresh() {
