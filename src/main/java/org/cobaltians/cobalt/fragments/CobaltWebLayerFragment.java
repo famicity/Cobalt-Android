@@ -190,7 +190,7 @@ public class CobaltWebLayerFragment extends CobaltFragment {
 				JSONObject jsonObj = new JSONObject();
 				jsonObj.put(Cobalt.kJSPage, getPage());
 				jsonObj.put(Cobalt.kJSData, mData);
-				sendEvent(Cobalt.JSEventonWebLayerDismissed, jsonObj, null);
+				mRootFragment.sendEvent(Cobalt.JSEventonWebLayerDismissed, jsonObj, null);
 			}
 			catch (JSONException exception) {
 				if(Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - onDismiss: JSONException");
