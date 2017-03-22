@@ -86,7 +86,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     protected HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
     protected HashMap<Integer, String> mMenuItemsIdMap = new HashMap<>();
     protected HashMap<String, MenuItem> mMenuItemByNameMap = new HashMap<>();
-	private CobaltFragment mMenuListener;
+	protected CobaltFragment mMenuListener;
 
     /***********************************************************************************************
      *

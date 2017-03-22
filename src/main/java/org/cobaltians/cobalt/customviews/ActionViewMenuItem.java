@@ -169,7 +169,7 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mImageButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ActionViewMenuItemListener listener = mListener.get();
+                        ActionViewMenuItemListener listener = mListener != null ? mListener.get() : null;
                         if (listener != null) {
                             listener.onPressed(mName);
                         }
@@ -191,7 +191,7 @@ public class ActionViewMenuItem extends RelativeLayout {
                 mButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ActionViewMenuItemListener listener = mListener.get();
+                        ActionViewMenuItemListener listener =  mListener != null ? mListener.get() : null;
                         if (listener != null) {
                             listener.onPressed(mName);
                         }
