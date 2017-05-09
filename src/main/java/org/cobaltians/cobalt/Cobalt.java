@@ -226,6 +226,8 @@ public class Cobalt {
     public final static String JSTypeWebLayer = "webLayer";
     public final static String JSActionWebLayerShow = "show";
     public final static String JSActionWebLayerDismiss = "dismiss";
+    public final static String JSActionWebLayerBringToFront = "bringToFront";
+    public final static String JSActionWebLayerSendToBack = "sendToBack";
     public final static String kJSWebLayerFadeDuration = "fadeDuration";
 	public final static String JSEventonWebLayerLoading = "onWebLayerLoading";
     public final static String JSEventonWebLayerLoaded = "onWebLayerLoaded";

@@ -758,29 +758,39 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                     case Cobalt.JSTypeWebLayer:
                         try {
                             action = jsonObj.getString(Cobalt.kJSAction);
-                            // SHOW
-                            if (action.equals(Cobalt.JSActionWebLayerShow)) {
-                                data = jsonObj.getJSONObject(Cobalt.kJSData);
-                                showWebLayer(data);
-                                messageHandled = true;
-                            }
-                            // DISMISS
-                            if (action.equals(Cobalt.JSActionWebLayerDismiss)) {
-                                if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
-                                    CobaltActivity activity = (CobaltActivity) mContext;
-                                    final Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getWebLayerFragmentContainerId());
-                                    if (currentFragment != null
-                                        && CobaltWebLayerFragment.class.isAssignableFrom(currentFragment.getClass())) {
-                                        activity.runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                ((CobaltWebLayerFragment) currentFragment).dismissWebLayer(jsonObj);
-                                            }
-                                        });
+                            switch (action) {
+                                // SHOW
+                                case Cobalt.JSActionWebLayerShow:
+                                    data = jsonObj.getJSONObject(Cobalt.kJSData);
+                                    showWebLayer(data);
+                                    messageHandled = true;
+                                    break;
+                                // DISMISS
+                                case Cobalt.JSActionWebLayerDismiss:
+                                    if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
+                                        CobaltActivity activity = (CobaltActivity) mContext;
+                                        final Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getWebLayerFragmentContainerId());
+                                        if (currentFragment != null
+                                                && CobaltWebLayerFragment.class.isAssignableFrom(currentFragment.getClass())) {
+                                            activity.runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    ((CobaltWebLayerFragment) currentFragment).dismissWebLayer(jsonObj);
+                                                }
+                                            });
+                                        }
                                     }
-                                }
 
-                                messageHandled = true;
+                                    messageHandled = true;
+                                    break;
+                                // BRING TO FRONT
+                                case Cobalt.JSActionWebLayerBringToFront:
+                                    bringWebLayerToFront();
+                                    break;
+                                // SEND TO BACK
+                                case Cobalt.JSActionWebLayerSendToBack:
+                                    sendWebLayerToBack();
+                                    break;
                             }
                         }
                         catch(JSONException exception) {
@@ -1346,9 +1356,21 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         else if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - onBackPressed: denied by WebView");
 	}
 	
-	/***********************************************************************************************************************************
+	/***********************************************************************************************
+     *
 	 * WEB LAYER
-	 **********************************************************************************************************************************/
+     *
+	 **********************************************************************************************/
+
+    /**
+     * Returns a new instance of {@link CobaltWebLayerFragment}
+     * @return a new instance of {@link CobaltWebLayerFragment}
+     * This method may be overridden in subclasses if the {@link CobaltWebLayerFragment} must implement customized stuff.
+     */
+    protected CobaltWebLayerFragment getWebLayerFragment() {
+        return new CobaltWebLayerFragment();
+    }
+
 	private void showWebLayer(JSONObject data) {
         try {
             String page = data.getString(Cobalt.kJSPage);
@@ -1405,15 +1427,46 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
             exception.printStackTrace();
         }
 	}
-	
-	/**
-	 * Returns new instance of a {@link CobaltWebLayerFragment}
-	 * @return a new instance of a {@link CobaltWebLayerFragment}
-	 * This method may be overridden in subclasses if the {@link CobaltWebLayerFragment} must implement customized stuff.
-	 */
-	protected CobaltWebLayerFragment getWebLayerFragment() {
-		return new CobaltWebLayerFragment();
-	}
+
+    /**
+     * Brings the WebLayer to front.
+     */
+	protected void bringWebLayerToFront() {
+        if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
+            CobaltActivity activity = (CobaltActivity) mContext;
+            View webLayerContainer = activity.findViewById(activity.getWebLayerFragmentContainerId());
+            if (webLayerContainer != null) {
+                webLayerContainer.bringToFront();
+            }
+            else if (Cobalt.DEBUG) {
+                Log.w(Cobalt.TAG, TAG + " - bringWebLayerToFront: WebLayer fragment container not found");
+            }
+        }
+        else if (Cobalt.DEBUG) {
+            Log.w(Cobalt.TAG, TAG + " - bringWebLayerToFront: fragment is attached to " + mContext.getClass().getSimpleName()
+                    + ", which is not a CobaltActivity");
+        }
+    }
+
+    /**
+     * Brings the WebView to front (which amounts to sending the WebLayer to back).
+     */
+    protected void sendWebLayerToBack() {
+        if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
+            CobaltActivity activity = (CobaltActivity) mContext;
+            View webViewContainer = activity.findViewById(activity.getFragmentContainerId());
+            if (webViewContainer != null) {
+                webViewContainer.bringToFront();
+            }
+            else if (Cobalt.DEBUG) {
+                Log.w(Cobalt.TAG, TAG + " - sendWebLayerToBack: WebView fragment container not found");
+            }
+        }
+        else if (Cobalt.DEBUG) {
+            Log.w(Cobalt.TAG, TAG + " - sendWebLayerToBack: fragment is attached to " + mContext.getClass().getSimpleName()
+                    + ", which is not a CobaltActivity");
+        }
+    }
 
     public boolean allowFragmentCommit() {
         return mAllowCommit;
