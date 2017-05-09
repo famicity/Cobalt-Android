@@ -30,15 +30,16 @@
 package org.cobaltians.cobalt.fragments;
 
 import org.cobaltians.cobalt.Cobalt;
-import org.cobaltians.cobalt.activities.CobaltActivity;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.cobaltians.cobalt.activities.CobaltActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -178,8 +179,15 @@ public class CobaltWebLayerFragment extends CobaltFragment {
 			}
 
             fragmentTransaction.remove(this);
-			if (allowFragmentCommit()) fragmentTransaction.commit();
+			if (allowFragmentCommit()) {
+				fragmentTransaction.commit();
+			}
 
+			if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
+				CobaltActivity activity = (CobaltActivity) mContext;
+				View webLayerFragmentContainer = activity.findViewById(activity.getWebLayerFragmentContainerId());
+				webLayerFragmentContainer.setVisibility(View.GONE);
+			}
 		}
 		else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - dismissWebLayer: Web layer is not attached to an activity.");
 	}

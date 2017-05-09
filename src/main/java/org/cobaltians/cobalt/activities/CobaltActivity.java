@@ -86,7 +86,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
     protected HashMap<String, ActionViewMenuItem> mMenuItemsHashMap = new HashMap<>();
     protected HashMap<Integer, String> mMenuItemsIdMap = new HashMap<>();
     protected HashMap<String, MenuItem> mMenuItemByNameMap = new HashMap<>();
-	protected CobaltFragment mMenuListener;
+	private CobaltFragment mMenuListener;
 
     /***********************************************************************************************
      *
@@ -338,8 +338,12 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 	}
 
 	public int getFragmentContainerId() {
-		return R.id.fragment_container;
+		return R.id.webview_fragment_container;
 	}
+
+    public int getWebLayerFragmentContainerId() {
+        return R.id.weblayer_fragment_container;
+    }
 
     public int getTopBarId() {
         return R.id.top_bar;

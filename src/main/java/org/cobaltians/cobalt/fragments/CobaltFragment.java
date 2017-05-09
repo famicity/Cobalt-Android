@@ -768,7 +768,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                             if (action.equals(Cobalt.JSActionWebLayerDismiss)) {
                                 if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
                                     CobaltActivity activity = (CobaltActivity) mContext;
-                                    final Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getFragmentContainerId());
+                                    final Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getWebLayerFragmentContainerId());
                                     if (currentFragment != null
                                         && CobaltWebLayerFragment.class.isAssignableFrom(currentFragment.getClass())) {
                                         activity.runOnUiThread(new Runnable() {
@@ -1380,15 +1380,17 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                         if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
                             // Dismiss current Web layer if one is already shown
                             CobaltActivity activity = (CobaltActivity) mContext;
-                            Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getFragmentContainerId());
+                            Fragment currentFragment = activity.getSupportFragmentManager().findFragmentById(activity.getWebLayerFragmentContainerId());
                             if (currentFragment != null
-                                    && CobaltWebLayerFragment.class.isAssignableFrom(currentFragment.getClass())) {
+                                && CobaltWebLayerFragment.class.isAssignableFrom(currentFragment.getClass())) {
                                 ((CobaltWebLayerFragment) currentFragment).dismissWebLayer(null);
                             }
 
                             // Shows Web layer
-                            if (activity.findViewById(activity.getFragmentContainerId()) != null) {
-                                fragmentTransition.add(activity.getFragmentContainerId(), webLayerFragment);
+                            View webLayerFragmentContainer = activity.findViewById(activity.getWebLayerFragmentContainerId());
+                            if (webLayerFragmentContainer != null) {
+                                webLayerFragmentContainer.setVisibility(View.VISIBLE);
+                                fragmentTransition.add(activity.getWebLayerFragmentContainerId(), webLayerFragment);
                                 if (allowFragmentCommit()) fragmentTransition.commit();
                             }
                             else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - showWebLayer: fragment container not found");
