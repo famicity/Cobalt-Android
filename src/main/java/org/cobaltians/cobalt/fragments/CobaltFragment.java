@@ -785,11 +785,21 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                                     break;
                                 // BRING TO FRONT
                                 case Cobalt.JSActionWebLayerBringToFront:
-                                    bringWebLayerToFront();
+                                    ((Activity) mContext).runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            bringWebLayerToFront();
+                                        }
+                                    });
                                     break;
                                 // SEND TO BACK
                                 case Cobalt.JSActionWebLayerSendToBack:
-                                    sendWebLayerToBack();
+                                    ((Activity) mContext).runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            sendWebLayerToBack();
+                                        }
+                                    });
                                     break;
                             }
                         }
@@ -1437,6 +1447,14 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
             View webLayerContainer = activity.findViewById(activity.getWebLayerFragmentContainerId());
             if (webLayerContainer != null) {
                 webLayerContainer.bringToFront();
+
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                    ViewParent parentView = webLayerContainer.getParent();
+                    parentView.requestLayout();
+                    if (parentView instanceof View) {
+                        ((View) parentView).invalidate();
+                    }
+                }
             }
             else if (Cobalt.DEBUG) {
                 Log.w(Cobalt.TAG, TAG + " - bringWebLayerToFront: WebLayer fragment container not found");
@@ -1455,8 +1473,17 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         if (CobaltActivity.class.isAssignableFrom(mContext.getClass())) {
             CobaltActivity activity = (CobaltActivity) mContext;
             View webViewContainer = activity.findViewById(activity.getFragmentContainerId());
+
             if (webViewContainer != null) {
                 webViewContainer.bringToFront();
+
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                    ViewParent parentView = webViewContainer.getParent();
+                    parentView.requestLayout();
+                    if (parentView instanceof View) {
+                        ((View) parentView).invalidate();
+                    }
+                }
             }
             else if (Cobalt.DEBUG) {
                 Log.w(Cobalt.TAG, TAG + " - sendWebLayerToBack: WebView fragment container not found");
