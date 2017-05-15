@@ -62,13 +62,6 @@ public class CobaltWebLayerFragment extends CobaltFragment {
 	 **********************************************************************************************/
 
 	@Override
-	public void onStart() {
-		super.onStart();
-		
-		mWebView.setBackgroundColor(Color.TRANSPARENT);
-	}
-
-	@Override
 	public void onDestroy() {
 		onDismiss();
 		

@@ -45,6 +45,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
@@ -122,6 +123,8 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
 
         if (savedInstanceState == null) {
+            applyBackgroundColor(extras.getString(Cobalt.kBackgroundColor));
+
             CobaltFragment fragment = getFragment();
             mMenuListener = fragment;
 
@@ -174,7 +177,6 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
             setupBars(null, null);
         }
     }
-
 
     @Override
     protected void onStart() {
@@ -336,6 +338,10 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
 	protected int getLayoutToInflate() {
 		return R.layout.activity_cobalt;
 	}
+
+    public int getFragmentsContainerId() {
+        return R.id.fragments_container;
+    }
 
 	public int getFragmentContainerId() {
 		return R.id.webview_fragment_container;
@@ -893,6 +899,32 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
 
         return resId;
+    }
+
+    /**
+     * Applies the specified color to the @link{org.cobaltians.cobalt.R.id#fragments_container} background.
+     * If color is null, default to "#FFFFFF" (white)
+     * @param color the color to apply to the @link{org.cobaltians.cobalt.R.id#fragments_container} background
+     */
+    private void applyBackgroundColor(@Nullable String color) {
+        View fragmentsContainer = findViewById(getFragmentsContainerId());
+        if (fragmentsContainer == null) {
+            if (Cobalt.DEBUG) {
+                Log.e(Cobalt.TAG, TAG + " - applyBackgroundColor: no fragments container found with id " + getFragmentsContainerId());
+            }
+
+            return;
+        }
+
+        int backgroundColorInt = Cobalt.parseColor(Cobalt.BACKGROUND_COLOR_DEFAULT);
+        try {
+            backgroundColorInt = Cobalt.parseColor(color);
+        }
+        catch(IllegalArgumentException exception) {
+            exception.printStackTrace();
+        }
+
+        fragmentsContainer.setBackgroundColor(backgroundColorInt);
     }
 
     /***********************************************************************************************

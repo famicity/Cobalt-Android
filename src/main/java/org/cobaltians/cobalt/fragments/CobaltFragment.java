@@ -44,6 +44,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -297,7 +298,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         mWebView.setScrollListener(this);
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
 
-        mWebView.setBackgroundColor(getBackgroundColor());
+        mWebView.setBackgroundColor(Color.TRANSPARENT);
 
         // Enables JS
         WebSettings webSettings = mWebView.getSettings();
@@ -1780,17 +1781,6 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         else {
             return Cobalt.INFINITE_SCROLL_OFFSET_DEFAULT_VALUE;
         }
-    }
-
-    private int getBackgroundColor() {
-        Bundle args = getArguments();
-        if (args != null) {
-            String color = args.getString(Cobalt.kBackgroundColor);
-            if (color != null) {
-                return Cobalt.parseColor(color);
-            }
-        }
-        return Cobalt.parseColor(Cobalt.BACKGROUND_COLOR_DEFAULT);
     }
 
     protected String getPage() {
