@@ -312,6 +312,13 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
         // Enables cross-domain calls for Ajax
         allowAjax();
+		
+        // Enable zoom on webview if html meta tag viewport allows it too.
+        webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            webSettings.setDisplayZoomControls(false);
+        }
 
         // Fix some focus issues on old devices like HTC Wildfire
         // keyboard was not properly showed on input touch.
