@@ -292,7 +292,7 @@ public class ActionViewMenuItem extends RelativeLayout {
             else idResource = getResource(icon);
             if (idResource != 0) {
                 try {
-                    //TODO: @sebf where is the color applied?
+                    mImageButton.setColorFilter(colorInt);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         mImageButton.setImageDrawable(mContext.getDrawable(idResource));
                     }
