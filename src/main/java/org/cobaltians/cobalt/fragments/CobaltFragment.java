@@ -292,7 +292,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         // Fix bug #123 on android 4.2.2 for render refresh view with layer type software
         // Deactivate completely hardware acceleration. It caused some render issues when hosted in ViewPager (ScrollViews conflict)
         // See https://stackoverflow.com/questions/12266696/webviews-in-viewpager-are-not-loaded-rendered-until-page-is-shown#answer-21890834
-        mWebView.setLayerType(BView.LAYER_TYPE_SOFTWARE, null);
+        mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD) mWebView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         mWebView.setScrollListener(this);
