@@ -513,7 +513,7 @@ public abstract class CobaltActivity extends AppCompatActivity implements Action
         }
     }
 
-    private void setupOptionsMenu(Menu menu, int color, JSONArray actions) {
+    protected void setupOptionsMenu(Menu menu, int color, JSONArray actions) {
         ActionBar actionBar = getSupportActionBar();
         // TODO: use LinearLayout for bottomBar instead to handle groups
         //LinearLayout bottomBar = (LinearLayout) findViewById(getBottomBarId());
