@@ -87,6 +87,8 @@ public class CobaltWebLayerFragment extends CobaltFragment {
 	protected void setWebViewSettings(CobaltFragment javascriptInterface) {
 		super.setWebViewSettings(javascriptInterface);
 
+		mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
 		WebViewClient webViewClient = new WebViewClient() {
 
 			@Override
@@ -170,7 +172,6 @@ public class CobaltWebLayerFragment extends CobaltFragment {
 			else {
                 fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_NONE);
 			}
-
             fragmentTransaction.remove(this);
 			if (allowFragmentCommit()) {
 				fragmentTransaction.commit();
