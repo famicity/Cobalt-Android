@@ -327,7 +327,8 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 
         // Fix some focus issues on old devices like HTC Wildfire
         // keyboard was not properly showed on input touch.
-        mWebView.requestFocus(View.FOCUS_DOWN);
+        // Removed the line below due to unfocus of native component on webLayer appearance
+        //mWebView.requestFocus(View.FOCUS_DOWN);
         mWebView.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
