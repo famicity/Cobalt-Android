@@ -1775,18 +1775,18 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
     /******************************************************
 	 * CONFIGURATION
 	 ******************************************************/
-	
-	private boolean isPullToRefreshActive() {
+
+    protected boolean isPullToRefreshActive() {
 		Bundle args = getArguments();
         return args != null && args.getBoolean(Cobalt.kPullToRefresh);
 	}
-	
-	private boolean isInfiniteScrollActive() {
+
+    protected boolean isInfiniteScrollActive() {
 		Bundle args = getArguments();
 		return args != null && args.getBoolean(Cobalt.kInfiniteScroll);
 	}
 
-    private int getInfiniteScrollOffset() {
+    protected int getInfiniteScrollOffset() {
         Bundle args = getArguments();
         if (args != null) {
             return args.getInt(Cobalt.kInfiniteScrollOffset);
@@ -1795,7 +1795,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
             return Cobalt.INFINITE_SCROLL_OFFSET_DEFAULT_VALUE;
         }
     }
-
+    
     protected String getPage() {
         Bundle args = getArguments();
         if (args != null) {
