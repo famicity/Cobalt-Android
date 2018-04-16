@@ -1395,7 +1395,7 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
         return new CobaltWebLayerFragment();
     }
 
-	private void showWebLayer(JSONObject data) {
+	protected void showWebLayer(JSONObject data) {
         try {
             String page = data.getString(Cobalt.kJSPage);
             final double fadeDuration = data.optDouble(Cobalt.kJSWebLayerFadeDuration, 0.3);
