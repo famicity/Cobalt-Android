@@ -415,12 +415,13 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
 	 * Sends script to be executed by JavaScript in Web view
 	 * @param jsonObj: JSONObject containing script.
 	 */
-	private void executeScriptInWebView(final JSONObject jsonObj) {
+    private void executeScriptInWebView(final JSONObject jsonObj) {
         if (jsonObj != null) {
-			if (mWebView != null
-                && mWebView.getHandler() != null
-                && mCobaltIsReady) {
-                mWebView.getHandler().post(new Runnable() {
+            Activity activity = getActivity();
+            if (mWebView != null
+                    && activity != null
+                    && mCobaltIsReady) {
+                activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         // Line & paragraph separators are not JSON compliant but supported by JSONObject
@@ -435,14 +436,14 @@ public abstract class CobaltFragment extends Fragment implements IScrollListener
                         mWebView.loadUrl(url);
                     }
                 });
-			}
-			else {
-				if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeScriptInWebView: adding message to queue: " + jsonObj);
+            }
+            else {
+                if (Cobalt.DEBUG) Log.i(Cobalt.TAG, TAG + " - executeScriptInWebView: adding message to queue: " + jsonObj);
                 mToJSWaitingCallsQueue.add(jsonObj);
-			}
-		}
+            }
+        }
         else if (Cobalt.DEBUG) Log.e(Cobalt.TAG, TAG + " - executeScriptInWebView: jsonObj is null!");
-	}
+    }
 
     public void executeToJSWaitingCalls() {
         ArrayList<JSONObject> toJSWaitingCallsQueue = new ArrayList<>(mToJSWaitingCallsQueue);
